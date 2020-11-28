@@ -62,9 +62,9 @@ class betaVAE(nn.Module):
         # finish the encoder
         self.encoder = nn.Sequential(*sets_of_conv_selu_bn)
 
-        # now define the mean and variance layers
+        # now define the mean and standard deviation layers
         self.mean_layer = nn.Linear(in_features=self.channels[-1], out_features=self.z_dim)
-        self.variance_layer = nn.Linear(in_features=self.channels[-1], out_features=self.z_dim)
+        self.std_layer = nn.Linear(in_features=self.channels[-1], out_features=self.z_dim)
 
         # use a linear layer for the input of the decoder
         in_channels = self.channels[-1]
@@ -107,31 +107,53 @@ class betaVAE(nn.Module):
 
     def encode(self, X):
         """
-        :param X: (Tensor) Input to encode into mean and variance.
+        :param X: (Tensor) Input to encode into mean and standard deviation.
 
-        :return: (tuple) The mean and variance tensors that the encoder produces for input X.
+        :return: (tuple) The mean and std tensors that the encoder produces for input X.
 
         This method applies forward propagation to the self.encoder in order to get the mean and
-        variance of the latent vector z.
+        standard deviation of the latent vector z.
         """
-        # run the input through the sets of Convolutional - SeLU - Batch Normalization layers
+        # run the input through the encoder part of the Nerwork
         encoded_input = self.encoder(X)
-        # flatten
+        # flatten so that it can be fed to the mean and standard deviation layers
         encoded_input = torch.flatten(encoded_input, start_dim=1)
 
-        # compute the mean and variance
+        # compute the mean and standard deviation
         mean = self.mean_layer(encoded_input)
-        variance = self.variance_layer(encoded_input)
+        std = self.std_layer(encoded_input)
 
-        # return them
-        return mean, variance
+        return mean, std
+
+    def reparameterize(self, mean, std):
+        """
+        :param mean: (Tensor) The mean of the latent vector z following a Gaussian distribution.
+        :param std:  (Tensor) The standard deviation of the latent vector z following a Gaussian
+                              distribution.
+
+        :return: (Tensor) Linear combination of the mean and standard deviation, where the latter
+                          factor is multiplied with a random variable epsilon ~ N(0, 1).
+
+        This method applies the reparameterization trick to the output of the mean and standard
+        deviation layers, in order to be able to compute the gradient. The stochasticiy here is
+        introduced by the factor epsilon, which is an independent node. Thus, we do not have to
+        compute its gradient during backpropagation.
+        """
+
+        # compute the stochastic node epsilon
+        epsilon = torch.randn_like(std)
+        # raise the standard deviation to an exponent, to improve numberical stability
+        std = torch.exp(1/2 * std)
+
+        # compute the linear combination of the above attributes and return
+        return mean + epsilon * std
 
     def decode(self, z):
         """
         :param z: (Tensor) Latent vector computed using the mean and variance layers (with the
                            reparameterization trick).
 
-        :return: (Tensor) The output of the betaVAE, the reconstructed image X.
+        :return: (Tensor) The output of the decoder part of the network.
 
         This method performs forward propagation of the latent vector through the decoder of the
         betaVAE to get the final output of the network.
