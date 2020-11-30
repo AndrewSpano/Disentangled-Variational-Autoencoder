@@ -2,7 +2,7 @@
 Implements the Original Variational Autoencoder paper: https://arxiv.org/pdf/1312.6114.pdf
 """
 import sys
-sys.path.append("../../utils")
+sys.path.append("../utils")
 
 import torch
 import torch.nn as nn
@@ -38,17 +38,16 @@ class VAE(nn.Module):
 
         # build the encoder
         self.encoder, self.encoder_output_shape = create_encoder(architecture, input_shape)
-        print("encoder_output_shape: {}".format(self.encoder_output_shape))
 
+        # compute the length of the output of the decoder once it has been flattened
+        in_features = self.conv_channels[-1] * np.prod(self.encoder_output_shape[:])
         # now define the mean and standard deviation layers
-        """ ToDo: fix here """
-        self.mean_layer = nn.Linear(in_features=2048, out_features=self.z_dim)
-        self.std_layer = nn.Linear(in_features=2048, out_features=self.z_dim)
+        self.mean_layer = nn.Linear(in_features=in_features, out_features=self.z_dim)
+        self.std_layer = nn.Linear(in_features=in_features, out_features=self.z_dim)
 
         # use a linear layer for the input of the decoder
         in_channels = self.conv_channels[-1]
-        """ ToDo: fix here """
-        self.decoder_input = nn.Linear(in_features=self.z_dim, out_features=2048)
+        self.decoder_input = nn.Linear(in_features=self.z_dim, out_features=in_features)
 
         # build the decoder
         self.decoder = create_decoder(architecture)
@@ -68,11 +67,9 @@ class VAE(nn.Module):
         """
         # run the input through the encoder part of the Nerwork
         encoded_input = self.encoder(X)
-        print("shape: {}".format(encoded_input.shape))
 
         # flatten so that it can be fed to the mean and standard deviation layers
         encoded_input = torch.flatten(encoded_input, start_dim=1)
-
 
         # compute the mean and standard deviation
         mean = self.mean_layer(encoded_input)
@@ -119,8 +116,9 @@ class VAE(nn.Module):
         decoder_input = self.decoder_input(z)
 
         # convert back the shape that will be fed to the decoder
-        """ ToDo: fix here """
-        decoder_input = decoder_input.view(-1, self.conv_channels[-1], 16, 16)
+        height = self.encoder_output_shape[0]
+        width = self.encoder_output_shape[1]
+        decoder_input = decoder_input.view(-1, self.conv_channels[-1], height, width)
 
         # run through the decoder
         decoder_output = self.decoder(decoder_input)

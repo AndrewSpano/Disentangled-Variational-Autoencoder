@@ -2,7 +2,7 @@
 Implements the betaVAE from the paper: https://arxiv.org/pdf/1606.05579.pdf
 """
 import sys
-sys.path.append("../../utils")
+sys.path.append("../utils")
 
 import torch
 import torch.nn as nn

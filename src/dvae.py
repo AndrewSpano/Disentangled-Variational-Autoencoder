@@ -34,8 +34,8 @@ def main():
 
     # define here the hyperparameters that define the architecture of the model
     conv_layers = 3
-    conv_channels = [16, 16, 8]
-    conv_kernel_sizes = [(7, 7), (7, 7), (7, 7)]
+    conv_channels = [16, 32, 64]
+    conv_kernel_sizes = [(7, 7), (5, 5), (3, 3)]
     conv_strides = [(1, 1), (1, 1), (1, 1)]
     conv_paddings = [(1, 1), (1, 1), (1, 1)]
 
@@ -48,7 +48,7 @@ def main():
         "conv_paddings": conv_paddings
     }
 
-    plot_image(X[0, 0, :, :])
+    # plot_image(X[0, 0, :, :])
     # create the dvae
     vae = VAE(architecture_hyperparameters, input_shape=X.shape, z_dimension=2)
 
@@ -57,7 +57,7 @@ def main():
     output, mean, std = vae(X[0:1, :, :, :].float())
     # output.detach().numpy()
 
-    plot_image(output.detach().numpy()[0, 0, :, :])
+    # plot_image(output.detach().numpy()[0, 0, :, :])
 
     x_for_loss = X[0:1, :, :, :]
     output_for_loss = output[0:1, :, :, :]

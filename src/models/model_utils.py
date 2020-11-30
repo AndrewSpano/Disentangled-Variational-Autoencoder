@@ -1,5 +1,10 @@
+import sys
+sys.path.append("../utils")
+
 import torch
 import torch.nn as nn
+
+from errors import InvalidArchitectureError
 
 
 def compute_output_shape(current_shape, kernel_size, stride, padding):
@@ -22,8 +27,23 @@ def compute_output_shape(current_shape, kernel_size, stride, padding):
     # get the dimension of the data
     dimensions = len(current_shape)
     # compute each component using the above formula and return
-    return tuple((current_shape[i] - kernel_size[i] + 2 * padding[i]) // stride[i]
+    return tuple((current_shape[i] - kernel_size[i] + 2 * padding[i]) // stride[i] + 1
                  for i in range(dimensions))
+
+
+def invalid_shape(current_shape):
+    """
+    :param current_shape: (tuple) The current shape of the data after a convolution is applied.
+
+    :return: (bool) True is the shape is invalid, that is, a negative or 0 components exists. Else,
+                    it returns False.
+    """
+    # check all components
+    for component in current_shape:
+        if component <= 0:
+            return True
+    # return False if they are ok
+    return False
 
 
 def create_encoder(architecture, input_shape):
@@ -69,6 +89,12 @@ def create_encoder(architecture, input_shape):
                                              stride=architecture["conv_strides"][layer],
                                              padding=architecture["conv_paddings"][layer])
 
+        # make sure that the shape is valid, and if not, raise an error
+        if invalid_shape(current_shape):
+            # raise InvalidArchitectureError(shape=current_shape, layer=layer + 1)
+            raise InvalidArchitectureError(shape=current_shape, layer=layer+1)
+
+
         # the output channels of the current layer becomes the input channels of the next layer
         in_channels = out_channels
 
@@ -89,8 +115,7 @@ def create_decoder(architecture):
     sets_of_convtr_selu_bn = []
 
     # define the current number of channels (after the reformation of the latent vector z)
-    """ ToDo: fix here """
-    in_channels = 8
+    in_channels = architecture["conv_channels"][-1]
 
     # iterate through the lists that define the architecture of the decoder
     for layer in range(architecture["conv_layers"] - 1, -1, -1):
