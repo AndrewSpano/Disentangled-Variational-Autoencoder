@@ -156,7 +156,7 @@ class VAE(nn.Module):
                                (N, input_shape[1], H, W)
         :param eps:   (Double) A small positive double used to ensure we don't get log of 0.
 
-        :return: (Tensor) The Data Fidelity term of the loss function, which is givem by the formula
+        :return: (Tensor) The Data Fidelity term of the loss function, which is given by the formula
 
             E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))] =
 
