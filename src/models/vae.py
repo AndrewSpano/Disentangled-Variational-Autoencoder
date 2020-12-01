@@ -6,15 +6,18 @@ sys.path.append("../utils")
 
 import torch
 import torch.nn as nn
+import torchvision
+import pytorch_lightning as pl
+from torch.utils.data import Dataset, DataLoader
 
 from model_utils import *
 from utils import *
 
 
-class VAE(nn.Module):
+class VAE(pl.LightningModule):
     """ Class that implements a Variational Autoencoder """
 
-    def __init__(self, architecture, input_shape, z_dimension):
+    def __init__(self, architecture, input_shape, z_dimension, batch_size):
         """
         :param architecture: (dict)  A dictionary containing the hyperparameters that define the
                                      architecture of the model.
@@ -29,15 +32,19 @@ class VAE(nn.Module):
 
         # initialize class variables regarding the architecture of the model
         self.input_shape = input_shape
+
         self.conv_layers = architecture["conv_layers"]
         self.conv_channels = architecture["conv_channels"]
         self.conv_kernel_sizes = architecture["conv_kernel_sizes"]
         self.conv_strides = architecture["conv_strides"]
         self.conv_paddings = architecture["conv_paddings"]
+
         self.z_dim = z_dimension
 
+        self.batch_size = batch_size
+
         # build the encoder
-        self.encoder, self.encoder_output_shape = create_encoder(architecture, input_shape)
+        self.encoder, self.encoder_output_shape = create_encoder(architecture, (None, 1, 28, 28))
 
         # compute the length of the output of the decoder once it has been flattened
         in_features = self.conv_channels[-1] * np.prod(self.encoder_output_shape[:])
@@ -53,7 +60,7 @@ class VAE(nn.Module):
         self.decoder = create_decoder(architecture)
 
         # build the output layer
-        self.output_layer = create_output_layer(architecture, input_shape)
+        self.output_layer = create_output_layer(architecture, (None, 1, 28, 28))
 
     def _encode(self, X):
         """
@@ -147,6 +154,53 @@ class VAE(nn.Module):
         decoded_output = self._decode(z)
         return decoded_output, mean, std
 
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=1e-3)
+
+
+    def training_step(self, batch, batch_idx):
+        X, y = batch
+
+        output, mean, std = self(X)
+        losses = self.criterion(X, output, mean, std)
+
+        return losses
+
+    def train_dataloader(self):
+        train_set_path = "../datasets/"
+        train_set = torchvision.datasets.MNIST(root=train_set_path,
+                                               train=True,
+                                               download=True,
+                                               transform=torchvision.transforms.ToTensor())
+
+        train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True, num_workers=4)
+        return train_loader
+
+    def test_step(self, batch, batch_idx):
+        X, y = batch
+
+        output, mean, std = self(X)
+
+        # if (batch_idx < 10):
+        #     print(type(output))
+        #     print(type(X))
+        #     for i in range(len(output)):
+        #         plot_against(X[i][0], output[i][0])
+
+        losses = self.criterion(X, output, mean, std)
+
+        return losses
+
+    def test_dataloader(self):
+        test_set_path = "../datasets/"
+        test_set = torchvision.datasets.MNIST(root=test_set_path,
+                                              train=False,
+                                              download=True,
+                                              transform=torchvision.transforms.ToTensor())
+
+        test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, shuffle=False, num_workers=4)
+        return test_loader
+
     @staticmethod
     def _data_fidelity_loss(X, X_hat, eps=1e-10):
         """
@@ -169,7 +223,7 @@ class VAE(nn.Module):
         """
         # compute the data fidelity for every training example
         data_fidelity = torch.sum(X * torch.log(eps + X_hat) + (1 - X) * torch.log(eps + 1 - X_hat),
-                                  axis=0)
+                                  axis=[2,3])
         return data_fidelity
 
     @staticmethod
