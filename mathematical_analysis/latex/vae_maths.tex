@@ -226,12 +226,13 @@ We can rewrite the above term an an Expectation over $P$:
 \end{align*}
 Since the logarithmic term is independent of $x$, we can move it outside the
 expectation. This leaves us with
-\begin{align*}
+\begin{align}\label{eq:kld_exp}
     D_{KL} (P \,||\, Q)
-    \;=\quad &\frac{1}{2}\log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right) \\
-       \; -\, &\frac{1}{2} E_P \left[ (x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right] \\
+    \;=\quad &\frac{1}{2}\log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right) \nonumber \\
+       \; -\, &\frac{1}{2} E_P \left[ (x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right]
+            \nonumber \\
        \; +\, &\frac{1}{2} E_P \left[ (x-\mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right]
-\end{align*}
+\end{align}
 Let's now try to simplify the 2nd and 3rd terms of the above expression.
 \bigskip
 
@@ -258,7 +259,7 @@ of the trace function which we will need are:
 expectation terms computed before during the simplification of the KL Divergence.
 
 \begin{itemize}
-    \item Term 2. Note that the matrix multiplications inside the expectations reduce
+    \item Term 2. Note that the matrix multiplications inside the expectation reduces
         to a scalar value.
         \begin{align*}
             E_P \left[ (x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right]
@@ -279,15 +280,75 @@ expectation terms computed before during the simplification of the KL Divergence
         But the term $E_P\left[ (x - \mu_1)(x - \mu_1)^T \right]$ is equal to the
         \href{https://en.wikipedia.org/wiki/Covariance_matrix#Definition}
         {Covariance Matrix} $\Sigma_1$, thus yielding
-        \begin{align*}
+        \begin{align}\label{eq:kld_term2}
             E_P \left[ (x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right]
                 \;=\; tr\left( \Sigma_1 \Sigma_1^{-1} \right) \;=\; tr(I_k) \;=\; k
+        \end{align}
+    \item Term 3. Again, the term inside the expectation reduces to a scalar.
+        \begin{align*}
+            E_P &\left[ (x - \mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right] \\[1ex]
+            \mbox{Add and}& \mbox{ subtract } \mu_1: \\[1ex]
+            \;=&\; E_P \left[ [(x - \mu_1) + (\mu_1 - \mu_2)]^T\Sigma_2^{-1}
+                [(x - \mu_1) + (\mu_1 - \mu_2)] \right] \\[2ex]
+            \;=&\; E_P \left[ \left[(x - \mu_1)^T + (\mu_1 - \mu_2)^T\right]
+                \Sigma_2^{-1} [(x - \mu_1) + (\mu_1 - \mu_2)] \right] \\[2ex]
+            (A^T + B^T&)C(A + B) \;=\; A^TCA + A^TCB + B^TCA + B^TB: \\[2ex]
+            \;=&\; E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \;+\;
+                (x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \;+ \right. \\[2ex]
+                & \quad\;\;\;\,
+                \left. (\mu_1 - \mu_2)^T\Sigma_2^{-1}(x - \mu_1) \;+\; 
+                (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right] \\[2ex]
+            A^TCB \;=&\; B^TCA: \\[2ex]
+            \;=&\; E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \;+\;
+                2(x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \;+ \right. \\[2ex]
+                & \quad\;\;\;\,
+                \left. (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
         \end{align*}
-    \item Term 3. Again, note that the matrix multiplications inside the expectations
-        reduce to a scalar value.
+        \clearpage
+% --------------------           PAGE 6            ---------------------- %
+        Taking the expectation over each term individually:
+        \begin{align*}
+            E_P \left[ (x - \mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right]
+            \;=\; &E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \right] \;+\\[2ex]
+                  &E_P \left[ 2(x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right.]\;+\\[2ex]
+                  &E_P \left[ (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
+        \end{align*}
+        \begin{itemize}
+            \item The first sub-term has the same derivation as the first term from before:
+                $$E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \right] \;=\;
+                    tr(\Sigma_1\Sigma_2^{-1})$$
+            \item The second sub-term is equal to $0$ due to the expectation over
+                $(x - \mu_1)^T$. Specifically, the factor $\Sigma_2^{-1}(\mu_1 - \mu_2)$
+                can be moved out of the expectation as it is a constant:
+                \begin{align*}
+                    E_P \left[ 2(x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right.]
+                    \;=&\; 2E_P \left[ (x - \mu_1)^T \right]
+                        \Sigma_2^{-1}(\mu_1 - \mu_2) \\
+                    \;=&\; 0_k \; \Sigma_2^{-1}(\mu_1 - \mu_2) \\
+                    \;=&\; 0
+                \end{align*}
+            \item The third sub-term is the expectation of a constant, so it is equal
+                to the constant itself:
+                $$E_P \left[ (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)\right] \;=\;
+                (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)$$
+        \end{itemize}
+    These simplifications leave us with:
+    \begin{align}\label{eq:kld_term3}
+        E_P \left[ (x - \mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right] \;=\;\,
+        &tr(\Sigma_1\Sigma_2^{-1}) \,+ \nonumber \\
+        &(\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)
+    \end{align}
 \end{itemize}
 
-
+\noindent Finally, formula \eqref{eq:kld_exp} for the KL-Divergence can be ultimately
+simplified using equations \eqref{eq:kld_term2}, \eqref{eq:kld_term3} to:
+\begin{align}
+    D_{KL} (P \,||\, Q) \;=\;
+    \frac{1}{2}\log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right) \;+\;
+    k \;+\;
+    tr(\Sigma_1\Sigma_2^{-1}) \;+\; (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)
+\end{align}
+\QEDA
 
 \end{document}
 % ----------------    END OF DOCUMENT    ------------ %

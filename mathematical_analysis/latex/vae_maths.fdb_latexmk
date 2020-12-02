@@ -1,9 +1,9 @@
 # Fdb version 3
-["pdflatex"] 1606870004 "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.tex" "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.pdf" "vae_maths" 1606870005
+["pdflatex"] 1606902555 "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.tex" "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.pdf" "vae_maths" 1606902556
   "./images/vae-gaussian.png" 1606763884 274889 9cb2c2de7ad2e36a02773cf88510e618 ""
   "/etc/texmf/web2c/texmf.cnf" 1575715277 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.aux" 1606870005 2211 25a4d4bf36632af4b7f09c16609d39ed ""
-  "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.tex" 1606870004 12144 e020e58fbe0e447d2f3a6db02d9892c3 ""
+  "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.aux" 1606902556 2515 2582bbd9411c3090d7e08e8f8b1fcd0b ""
+  "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.tex" 1606902554 15696 21dd27a4e0b056f10dabb4de823913e1 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/mnsymbol/MnSymbolA.enc" 1480098668 3341 78e600b269762aa2a25a5293cc4535c0 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/mnsymbol/MnSymbolC.enc" 1480098668 3275 8d7166dfdbc31ffdc8aba0c31b3bd5c8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/mnsymbol/MnSymbolD.enc" 1480098668 3375 808c88761dbdc66fc653d18f42765b64 ""
@@ -139,13 +139,13 @@
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1575715423 2700761 ac0584cc9514ab21918550a6948c4ee2 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1575715461 4128202 196cd599d1d9d41a0d2a16456fe07099 ""
   "images/vae-gaussian.png" 1606763884 274889 9cb2c2de7ad2e36a02773cf88510e618 ""
-  "vae_maths.aux" 1606870005 2211 25a4d4bf36632af4b7f09c16609d39ed ""
-  "vae_maths.out" 1606870005 0 d41d8cd98f00b204e9800998ecf8427e ""
-  "vae_maths.tex" 1606870004 12144 e020e58fbe0e447d2f3a6db02d9892c3 ""
+  "vae_maths.aux" 1606902556 2515 2582bbd9411c3090d7e08e8f8b1fcd0b ""
+  "vae_maths.out" 1606902555 0 d41d8cd98f00b204e9800998ecf8427e ""
+  "vae_maths.tex" 1606902554 15696 21dd27a4e0b056f10dabb4de823913e1 ""
   (generated)
-  "vae_maths.log"
   "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.pdf"
-  "vae_maths.aux"
+  "vae_maths.log"
+  "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.log"
   "vae_maths.pdf"
   "vae_maths.out"
-  "/home/andreas/Desktop/Disentangled_Variational_Autoencoder/mathematical_analysis/latex/vae_maths.log"
+  "vae_maths.aux"
