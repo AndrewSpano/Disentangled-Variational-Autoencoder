@@ -165,9 +165,9 @@ Let's start by explaining what the second term of the loss function is. The
 \href{https://en.wikipedia.org/wiki/Relative_entropy}{Relative Entropy}, is
 a measure of similarity between two probability distributions. It is denoted by
 $D_{KL}(\cdot \;||\; \cdot)$, its unit of measure it called \textbf{nat} and it
-can computed by the formula (for discrete probability distributions):
+can computed by the formula (for continuous probability distributions $P, Q$):
 \begin{equation}\label{eq:KLD}
-    D_{KL} (P \,||\, Q) \;=\; \sum_x P(x) \log\left(\frac{P(x)}{Q(x)}\right)
+    D_{KL} (P \,||\, Q) \;=\; \int P(x) \log\left(\frac{P(x)}{Q(x)}\right) dx
 \end{equation}
 Of course, this implies that $D_{KL} (P \,||\, Q) \neq D_{KL} (Q \,||\, P)$.
 \bigskip
@@ -210,11 +210,11 @@ where $k$ is the magnitude (length) of vector $x$.
 
 \begin{align*}
     D_{KL} (P \,||\, Q)
-    \;=&\; \sum_x P(x) \left[\log(P(x)) - \log(Q(x)) \right] \\
-    \;=&\; \sum_x P(x) \left[ \frac{1}{2}\log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right)
+    \;=&\; \int P(x) \left[\log(P(x)) - \log(Q(x)) \right] dx\\
+    \;=&\; \int P(x) \left[ \frac{1}{2}\log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right)
         - \frac{1}{2}(x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right. \\
        &\left.\qquad\qquad\qquad\qquad\quad\;\;\;\,
-        + \frac{1}{2}(x-\mu_2)^T\Sigma_2^{-1} (x - \mu_2)\right]
+        + \frac{1}{2}(x-\mu_2)^T\Sigma_2^{-1} (x - \mu_2)\right] dx
 \end{align*}
 We can rewrite the above term an an Expectation over $P$:
 \begin{align*}
@@ -259,7 +259,7 @@ of the trace function which we will need are:
 expectation terms computed before during the simplification of the KL Divergence.
 
 \begin{itemize}
-    \item Term 2. Note that the matrix multiplications inside the expectation reduces
+    \item Term 2. Note that the matrix multiplications inside the expectation reduce
         to a scalar value.
         \begin{align*}
             E_P \left[ (x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right]
@@ -271,7 +271,7 @@ expectation terms computed before during the simplification of the KL Divergence
                 \Sigma_1^{-1} \right] \right)
         \end{align*}
         $\Sigma_1^{-1}$ is independent from the expectation over $P$, so it can be moved
-        outside, giving:
+        outside, thus giving:
         \begin{align*}
             E_P \left[ (x-\mu_1)^T\Sigma_1^{-1} (x - \mu_1) \right] \;=\;
                 tr\left( E_P\left[ (x - \mu_1)(x - \mu_1)^T
@@ -286,23 +286,18 @@ expectation terms computed before during the simplification of the KL Divergence
         \end{align}
     \item Term 3. Again, the term inside the expectation reduces to a scalar.
         \begin{align*}
-            E_P &\left[ (x - \mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right] \\[1ex]
-            \mbox{Add and}& \mbox{ subtract } \mu_1: \\[1ex]
+            E_P &\left[ (x - \mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right] \\[2ex]
+            \mbox{Add and}& \mbox{ subtract } \mu_1: \\[2ex]
             \;=&\; E_P \left[ [(x - \mu_1) + (\mu_1 - \mu_2)]^T\Sigma_2^{-1}
                 [(x - \mu_1) + (\mu_1 - \mu_2)] \right] \\[2ex]
             \;=&\; E_P \left[ \left[(x - \mu_1)^T + (\mu_1 - \mu_2)^T\right]
-                \Sigma_2^{-1} [(x - \mu_1) + (\mu_1 - \mu_2)] \right] \\[2ex]
-            (A^T + B^T&)C(A + B) \;=\; A^TCA + A^TCB + B^TCA + B^TB: \\[2ex]
+                \Sigma_2^{-1} [(x - \mu_1) + (\mu_1 - \mu_2)] \right] \\[2.5ex]
+            (A^T + B^T&)C(A + B) \;=\; A^TCA + A^TCB + B^TCA + B^TB: \\[2.5ex]
             \;=&\; E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \;+\;
                 (x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \;+ \right. \\[2ex]
                 & \quad\;\;\;\,
                 \left. (\mu_1 - \mu_2)^T\Sigma_2^{-1}(x - \mu_1) \;+\; 
-                (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right] \\[2ex]
-            A^TCB \;=&\; B^TCA: \\[2ex]
-            \;=&\; E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \;+\;
-                2(x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \;+ \right. \\[2ex]
-                & \quad\;\;\;\,
-                \left. (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
+                (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
         \end{align*}
         \clearpage
 % --------------------           PAGE 6            ---------------------- %
@@ -310,24 +305,28 @@ expectation terms computed before during the simplification of the KL Divergence
         \begin{align*}
             E_P \left[ (x - \mu_2)^T\Sigma_2^{-1} (x - \mu_2) \right]
             \;=\; &E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \right] \;+\\[2ex]
-                  &E_P \left[ 2(x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right.]\;+\\[2ex]
+                  &E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]\;+\\[2ex]
+                  &E_P \left[ (\mu_1 - \mu_2)^T\Sigma_2^{-1}(x - \mu_1) \right]\;+\\[2ex]
                   &E_P \left[ (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
         \end{align*}
         \begin{itemize}
             \item The first sub-term has the same derivation as the first term from before:
                 $$E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(x - \mu_1) \right] \;=\;
                     tr(\Sigma_1\Sigma_2^{-1})$$
-            \item The second sub-term is equal to $0$ due to the expectation over
-                $(x - \mu_1)^T$. Specifically, the factor $\Sigma_2^{-1}(\mu_1 - \mu_2)$
-                can be moved out of the expectation as it is a constant:
+            \item The second and third sub-terms are equal to $0$ due to the expectation
+                over $(x - \mu_1)^T$. Specifically, the factor $\Sigma_2^{-1}
+                (\mu_1 - \mu_2)$ can be moved out of the expectation as it is a constant:
                 \begin{align*}
-                    E_P \left[ 2(x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right.]
-                    \;=&\; 2E_P \left[ (x - \mu_1)^T \right]
+                    E_P \left[ (x - \mu_1)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
+                    \;=&\; E_P \left[ (x - \mu_1)^T \right]
                         \Sigma_2^{-1}(\mu_1 - \mu_2) \\
-                    \;=&\; 0_k \; \Sigma_2^{-1}(\mu_1 - \mu_2) \\
-                    \;=&\; 0
+                    \;=&\; 0_k \; \Sigma_2^{-1}(\mu_1 - \mu_2) \;=\; 0 \\[1.5ex]
+                    E_P \left[ (\mu_1 - \mu_2)^T\Sigma_2^{-1}(x - \mu_1) \right]
+                    \;=&\; (\mu_1 - \mu_2)^T\Sigma_2^{-1}
+                        E_P \left[ (x - \mu_1)^T \right] \\
+                    \;=&\; \Sigma_2^{-1}(\mu_1 - \mu_2) \; 0_k \;=\; 0
                 \end{align*}
-            \item The third sub-term is the expectation of a constant, so it is equal
+            \item The fourth sub-term is the expectation of a constant, so it is equal
                 to the constant itself:
                 $$E_P \left[ (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)\right] \;=\;
                 (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)$$
@@ -344,11 +343,14 @@ expectation terms computed before during the simplification of the KL Divergence
 simplified using equations \eqref{eq:kld_term2}, \eqref{eq:kld_term3} to:
 \begin{align}
     D_{KL} (P \,||\, Q) \;=\;
-    \frac{1}{2}\log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right) \;+\;
+    \frac{1}{2}\left[ \log\left(\frac{|\Sigma_2|}{|\Sigma_1|}\right) \;-\;
     k \;+\;
-    tr(\Sigma_1\Sigma_2^{-1}) \;+\; (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2)
+    tr(\Sigma_1\Sigma_2^{-1}) \;+\; (\mu_1 - \mu_2)^T\Sigma_2^{-1}(\mu_1 - \mu_2) \right]
 \end{align}
 \QEDA
+\clearpage
+
+% --------------------           PAGE 7            ---------------------- %
 
 \end{document}
 % ----------------    END OF DOCUMENT    ------------ %
