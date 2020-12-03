@@ -14,20 +14,25 @@ from vae import VAE
 
 def main(args):
     """ main() driver function """
-    # first make sure that the paths to the provided config file are valid
+
+    # Parameters parsing
     if filepath_is_not_valid(args.config):
         logging.error("The path {} is not a file. Aborting..".format(args.config))
         exit()
 
-    configuration, architecture = parse_config_file(args.config)
+    configuration, architecture, hyperparameters = parse_config_file(args.config, args.variation)
+    dataset_info = prepare_dataset(configuration)
+    if (dataset_info is None):
+        exit()
 
-    # train_set, test_set = load_dataset(configuration["dataset"])
+    # Initialization
+    model = VAE(architecture, hyperparameters, dataset_info)
+    trainer = Trainer(max_epochs = hyperparameters["epochs"], gpus=None, fast_dev_run=True)
 
-    model = VAE(architecture, 784, 2, 16)
-
-    trainer = Trainer(max_epochs = 5, gpus=None, fast_dev_run=True)
+    # Training and testing
     trainer.fit(model)
-    trainer.test(model)
+    result = trainer.test(model)
+    model.sample(1)
 
 if __name__ == "__main__":
     """ call main() function here """

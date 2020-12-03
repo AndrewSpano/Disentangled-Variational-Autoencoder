@@ -129,6 +129,8 @@ dmypy.json
 .pyre/
 
 # Ignore dataset and other stuff
+datasets
+dataset
 Dataset
-datasets/
+Datasets
 src/lightning_logs

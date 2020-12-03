@@ -4,6 +4,8 @@ Implements the Original Variational Autoencoder paper: https://arxiv.org/pdf/131
 import sys
 sys.path.append("../utils")
 
+import multiprocessing
+
 import torch
 import torch.nn as nn
 import torchvision
@@ -13,11 +15,12 @@ from torch.utils.data import Dataset, DataLoader
 from model_utils import *
 from utils import *
 
+DEFAULT_LEARNING_RATE = 1e-3
 
 class VAE(pl.LightningModule):
     """ Class that implements a Variational Autoencoder """
 
-    def __init__(self, architecture, input_shape, z_dimension, batch_size):
+    def __init__(self, architecture, hyperparameters, dataset_info):
         """
         :param architecture: (dict)  A dictionary containing the hyperparameters that define the
                                      architecture of the model.
@@ -31,20 +34,22 @@ class VAE(pl.LightningModule):
         super(VAE, self).__init__()
 
         # initialize class variables regarding the architecture of the model
-        self.input_shape = input_shape
 
         self.conv_layers = architecture["conv_layers"]
         self.conv_channels = architecture["conv_channels"]
         self.conv_kernel_sizes = architecture["conv_kernel_sizes"]
         self.conv_strides = architecture["conv_strides"]
         self.conv_paddings = architecture["conv_paddings"]
+        self.z_dim = architecture["z_dimension"]
 
-        self.z_dim = z_dimension
+        self.batch_size = hyperparameters["batch_size"]
 
-        self.batch_size = batch_size
+        self.dataset_method = dataset_info["ds_method"]
+        self.dataset_shape = dataset_info["ds_shape"]
+        self.dataset_path = dataset_info["ds_path"]
 
         # build the encoder
-        self.encoder, self.encoder_output_shape = create_encoder(architecture, (None, 1, 28, 28))
+        self.encoder, self.encoder_output_shape = create_encoder(architecture, self.dataset_shape)
 
         # compute the length of the output of the decoder once it has been flattened
         in_features = self.conv_channels[-1] * np.prod(self.encoder_output_shape[:])
@@ -60,7 +65,7 @@ class VAE(pl.LightningModule):
         self.decoder = create_decoder(architecture)
 
         # build the output layer
-        self.output_layer = create_output_layer(architecture, (None, 1, 28, 28))
+        self.output_layer = create_output_layer(architecture, self.dataset_shape)
 
     def _encode(self, X):
         """
@@ -155,7 +160,7 @@ class VAE(pl.LightningModule):
         return decoded_output, mean, std
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=DEFAULT_LEARNING_RATE)
 
 
     def training_step(self, batch, batch_idx):
@@ -167,39 +172,59 @@ class VAE(pl.LightningModule):
         return losses
 
     def train_dataloader(self):
-        train_set_path = "../datasets/"
-        train_set = torchvision.datasets.MNIST(root=train_set_path,
-                                               train=True,
-                                               download=True,
-                                               transform=torchvision.transforms.ToTensor())
+        train_set_path = self.dataset_path
+        train_set = self.dataset_method(root=train_set_path, train=True, download=True,
+                                        transform=torchvision.transforms.ToTensor())
 
-        train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True, num_workers=4)
-        return train_loader
+        self.train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True, num_workers=multiprocessing.cpu_count()//2)
+        return self.train_loader
 
     def test_step(self, batch, batch_idx):
         X, y = batch
 
-        output, mean, std = self(X)
+        X_hat, mean, std = self(X)
 
-        # if (batch_idx < 10):
-        #     print(type(output))
-        #     print(type(X))
-        #     for i in range(len(output)):
-        #         plot_against(X[i][0], output[i][0])
+        losses = self.criterion(X, X_hat, mean, std)
 
-        losses = self.criterion(X, output, mean, std)
+        mse_loss_func = torch.nn.MSELoss()
+        mse_loss = mse_loss_func(X, X_hat)
 
-        return losses
+        self.log('mse_loss', mse_loss.item())
+        self.log('losses', losses)
+        return losses, mse_loss
 
     def test_dataloader(self):
-        test_set_path = "../datasets/"
-        test_set = torchvision.datasets.MNIST(root=test_set_path,
-                                              train=False,
-                                              download=True,
-                                              transform=torchvision.transforms.ToTensor())
+        test_set_path = self.dataset_path
+        test_set = self.dataset_method(root=test_set_path, train=False, download=True,
+                                        transform=torchvision.transforms.ToTensor())
 
-        test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, shuffle=False, num_workers=4)
-        return test_loader
+        self.test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, shuffle=True, num_workers=multiprocessing.cpu_count()//2)
+        return self.test_loader
+
+    def sample(self, number_of_images):
+        X, y = next(iter(self.test_loader))
+
+        output, mean, std = self(X)
+
+        max_imgs = min(number_of_images, len(X))
+        for i in range(max_imgs):
+            if (self.dataset_shape[0] == 3):
+                X_np = X[i].detach().numpy().ravel()
+                X_hat_np = output[i].detach().numpy().ravel()
+
+                X_np = np.reshape(X_np, (self.dataset_shape[1], self.dataset_shape[2], 3), order='F')
+                X_hat_np = np.reshape(X_hat_np, (self.dataset_shape[1], self.dataset_shape[2], 3), order='F')
+
+                X_np = np.rot90(X_np, 3)
+                X_hat_np = np.rot90(X_hat_np, 3)
+                # X_np = np.rot90(X_np)
+                # X_hat_np = np.rot90(X_hat_np)
+                # X_np = np.rot90(X_np)
+                # X_hat_np = np.rot90(X_hat_np)
+
+                plot_against(X_np, X_hat_np, y[i].item(), 'viridis')
+            elif (self.dataset_shape[0] == 1):
+                plot_against(X[i][0].detach().numpy(), output[i][0].detach().numpy(), y[i].item(), 'gray')
 
     @staticmethod
     def _data_fidelity_loss(X, X_hat, eps=1e-10):
@@ -223,7 +248,7 @@ class VAE(pl.LightningModule):
         """
         # compute the data fidelity for every training example
         data_fidelity = torch.sum(X * torch.log(eps + X_hat) + (1 - X) * torch.log(eps + 1 - X_hat),
-                                  axis=[2,3])
+                                  axis=[1, 2, 3])
         return data_fidelity
 
     @staticmethod
