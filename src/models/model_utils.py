@@ -58,10 +58,10 @@ def create_encoder(architecture, input_shape):
     """
 
     # the number of channels that the input image has
-    in_channels = input_shape[1]
+    in_channels = input_shape[0]
 
     # keep track of the current Height and Width of the image
-    current_shape = (input_shape[2], input_shape[3])
+    current_shape = (input_shape[1], input_shape[2])
 
     # build the encoder part
     sets_of_conv_selu_bn = []
@@ -163,7 +163,7 @@ def create_output_layer(architecture, input_shape):
                                 padding=architecture["conv_paddings"][0])
     selu = nn.SELU()
     batch_norm = nn.BatchNorm2d(in_channels)
-    conv = nn.Conv2d(in_channels=in_channels, out_channels=input_shape[1],
+    conv = nn.Conv2d(in_channels=in_channels, out_channels=input_shape[0],
                      kernel_size=architecture["conv_kernel_sizes"][0],
                      stride=architecture["conv_strides"][0],
                      padding=architecture["conv_paddings"][0])
