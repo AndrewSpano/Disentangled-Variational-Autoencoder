@@ -31,7 +31,7 @@ Currently two models are supported, a simple Variational Autoencoder and a Disen
       
       
 ## Execution
-To execute the VAE, you have to navigate to the [src](src) directory and execute the following command
+To execute the VAE, you have to navigate to the [src](src) directory and execute the following command <br>
     ```bash
     $ python3 main.py -c <config_file_path> -v <variation>
     ```
@@ -57,13 +57,18 @@ The configuration file should have the following format:
     ```
     
 ### Variation
-Variation indicates what kind of Variational Autoencoder you want to train. Right now, the only options are
-    ```bash
+Variation indicates what kind of Variational Autoencoder you want to train. Right now, the only options are:<br>
+    ```
     $ python3 main.py -c <config_file_path> -v VAE
     ```
-    and
-    ```bash
+    <br>and<br>
+    ```
     $ python3 main.py -c <config_file_path> -v B-VAE
     ```
 Keep in mind that for the second option, the beta parameter is required in the configuration file (in the section "hyperparameters")
+
+
+## Colab Notebook
+Under the [notebook](notebook) directory exists a jupyter notebook. This is useful for experimentation/testing as it makes the usage of a GPU much easier.
+Keep in mind that the core code remains the same, however the initialization of values is done manually.
     
