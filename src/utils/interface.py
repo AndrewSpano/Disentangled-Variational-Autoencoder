@@ -5,7 +5,13 @@ import torchvision
 from utils import str_to_int_list, str_to_tuple_list
 
 def parse_cmd_args(arg=None):
-    """ function used to parse the command line input of the autoencoder """
+    """
+    :param list arg:    A list with all the command line arguments given by the user
+
+    :return:            An object containing all arguments given as attributes
+
+    Function used to parse the command line input of the program
+    """
 
     # create the argument parser
     description = "Python script that creates a variational autoencoder used to reduce the dimensionality " \
@@ -27,25 +33,33 @@ def parse_cmd_args(arg=None):
 
 
 def parse_config_file(filepath, variation):
-    """ function used to parse the configuration file given by the user """
+    """
+    :param str filepath:    The path to the config file given as a cmd line argument
 
+    :return:                A tuple containing three dictionaries:
+                            Configuration contains general information,
+                            Architecture contains information about the
+                            architecture of the model,
+                            Hyperparameters contains information regarding the
+                            hyperparameters used in the model
+
+    Function used to parse the config file given by the user
+    """
+
+    # Initialize the dictionaries
     configuration = {}
     architecture = {}
     hyperparameters = {}
 
-    available_config_params = ['dataset', 'path']
-
-    available_arch_params = ['conv_layers', 'conv_channels', 'conv_kernel_sizes',
-                            'conv_strides', 'conv_paddings', 'z_dimension']
-
-    available_hyper_params = ['epochs', 'batch_size', 'beta']
-
+    # Initialize the ConfigParser
     config = ConfigParser()
     config.read(filepath)
 
+    # Get the configuration information
     dataset = config.get('configuration', 'dataset')
     path = config.get('configuration', 'path')
 
+    # Get the architecture information
     conv_layers_str = config.get('architecture', 'conv_layers')
     conv_layers = int(conv_layers_str)
 
@@ -72,7 +86,7 @@ def parse_config_file(filepath, variation):
     z_dimension_str = config.get('architecture', 'z_dimension')
     z_dimension = int(z_dimension_str)
 
-
+    # Get the hyperparameters information
     epochs_str = config.get('hyperparameters', 'epochs')
     epochs = int(epochs_str)
 

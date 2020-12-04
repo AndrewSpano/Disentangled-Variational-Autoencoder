@@ -13,16 +13,19 @@ from utils import *
 
 
 class betaVAE(VAE):
-    """ Class that implements a Disentangled Variational Autoencoder (Beta VAE) """
+    """
+    Class that implements a Disentangled Variational Autoencoder (Beta VAE).
+    This class inherits from the VAE class.
+    """
 
     def __init__(self, architecture, hyperparameters, dataset_info):
         """
-        :param architecture: (dict)  A dictionary containing the hyperparameters that define the
-                                     architecture of the model.
-        :param input_shape:  (tuple) A tuple that corresponds to the shape of the input.
-        :param z_dimension:  (int)   The dimension of the latent vector z (bottleneck).
-        :param beta:         (float) The disentanglment factor to be multiplied with the KL
-                                     divergence.
+        :param dict architecture:      A dictionary containing the hyperparameters that define the
+                                       architecture of the model.
+        :param dict hyperparameters:   A tuple that corresponds to the shape of the input.
+        :param dict dataset_info:      The dimension of the latent vector z (bottleneck).
+
+        :return:                       An instance of the VAE class
 
         The constructor of the Disentangled Variational Autoencoder.
         """
@@ -36,18 +39,18 @@ class betaVAE(VAE):
 
     def criterion(self, X, X_hat, mean, std):
         """
-        :param X:     (Tensor) The original input data that was passed to the VAE.
+        :param Tensor X:      The original input data that was passed to the B-VAE.
                                (N, input_shape[1], H, W)
-        :param X_hat: (Tensor) The reconstructed data, the output of the VAE.
+        :param Tensor X_hat:  The reconstructed data, the output of the B-VAE.
                                (N, input_shape[1], H, W)
-        :param mean:  (Tensor) The output of the mean layer, computed with the output of the
+        :param Tensor mean:   The output of the mean layer, computed with the output of the
                                encoder. (N, z_dim)
-        :param std:   (Tensor) The output of the standard deviation layer, computed with the output
+        :param Tensor std:    The output of the standard deviation layer, computed with the output
                                of the encoder. (N, z_dim)
 
-        :return: (Dict) A dictionary containing the values of the losses computed.
+        :return:              A dictionary containing the values of the losses computed.
 
-        This method computes the loss of the betaVAE using the formula:
+        This method computes the loss of the B-VAE using the formula:
 
             L(x, x_hat) = - E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))]
                           + beta * D_{KL}[Q_{phi}(z | x) || P_{theta}(x)]
