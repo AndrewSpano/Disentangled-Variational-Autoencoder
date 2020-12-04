@@ -92,7 +92,6 @@ def create_encoder(architecture, input_shape):
 
         # make sure that the shape is valid, and if not, raise an error
         if invalid_shape(current_shape):
-            # raise InvalidArchitectureError(shape=current_shape, layer=layer + 1)
             raise InvalidArchitectureError(shape=current_shape, layer=layer+1)
 
 
