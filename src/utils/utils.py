@@ -6,7 +6,13 @@ import torchvision
 
 
 def filepath_is_not_valid(filepath):
-    """ function used to check whether a filepath containing information is valid """
+    """
+    :param str filepath:    The path of the given file to check
+
+    :return:                Boolean
+
+    Function used to check whether a filepath containing information is valid
+    """
 
     # check if the path leads to a file
     if not os.path.isfile(filepath):
@@ -17,7 +23,13 @@ def filepath_is_not_valid(filepath):
     return False
 
 def prepare_dataset(configuration):
-    """ function used to set some values used by the model based on the dataset selected """
+    """
+    :param dict configuration: The configuration dictionary returned by parse_config_file
+
+    :return:        A dictionary containing information about the dataset used
+
+    Function used to set some values used by the model based on the dataset selected
+    """
     dataset_info = {}
     if (configuration["dataset"] == "MNIST"):
         dataset_info["ds_method"] = torchvision.datasets.MNIST
@@ -34,7 +46,13 @@ def prepare_dataset(configuration):
     return dataset_info
 
 def str_to_int_list(string):
-    """ utility function used to convert a string to a list of integers """
+    """
+    :param str string:      A string read by the config file
+
+    :return:        A list of integers
+
+    Utility function used to convert a string to a list of integers
+    """
     list = []
     parts = string.split(',')
 
@@ -49,7 +67,13 @@ def str_to_int_list(string):
     return list
 
 def str_to_tuple_list(string):
-    """ utility function used to convert a string to a list of tuples of integers """
+    """
+    :param str string:      A string read by the config file
+
+    :return:        A list of tuples of integers
+
+    Utility function used to convert a string to a list of tuples of integers
+    """
     list = []
     parts = string.split(')')
 
@@ -76,7 +100,16 @@ def str_to_tuple_list(string):
     return list
 
 def plot_against(image1, image2, label, cmap):
-    """ function used to plot 2 images "against" each other using pyplot """
+    """
+    :param np.array image1:     An image stored as a numpy array
+    :param np.array image2:     An image stored as a numpy array
+    :param int label:           The label that corresponds to the images
+    :param str cmap:            The colourmap to be used by pyplot
+
+    :return:                    Nothing
+
+    Function used to plot 2 images "against" each other using pyplot
+    """
     fig=plt.figure(figsize=(6, 6))
     title = "Label {}".format(label)
     fig.suptitle(title, fontsize=12)

@@ -20,10 +20,12 @@ class VAE(pl.LightningModule):
 
     def __init__(self, architecture, hyperparameters, dataset_info):
         """
-        :param architecture: (dict)  A dictionary containing the hyperparameters that define the
-                                     architecture of the model.
-        :param input_shape:  (tuple) A tuple that corresponds to the shape of the input.
-        :param z_dimension:  (int)   The dimension of the latent vector z (bottleneck).
+        :param dict architecture:      A dictionary containing the hyperparameters that define the
+                                       architecture of the model.
+        :param dict hyperparameters:   A tuple that corresponds to the shape of the input.
+        :param dict dataset_info:      The dimension of the latent vector z (bottleneck).
+
+        :return:                       An instance of the VAE class
 
         The constructor of the Variational Autoencoder.
         """
@@ -69,10 +71,11 @@ class VAE(pl.LightningModule):
 
     def _encode(self, X):
         """
-        :param X: (Tensor) Input to encode into mean and standard deviation.
-                           (N, input_shape[1], H, W)
+        :param Tensor X:  Input to encode into mean and standard deviation.
+                          (N, input_shape[1], H, W)
 
-        :return: (tuple) The mean and std tensors that the encoder produces for input X. (N, z_dim)
+        :return:          A tuple with the mean and std tensors that the encoder produces
+                          for input X. (N, z_dim)
 
         This method applies forward propagation to the self.encoder in order to get the mean and
         standard deviation of the latent vector z.
@@ -91,14 +94,14 @@ class VAE(pl.LightningModule):
 
     def _compute_latent_vector(self, mean, std):
         """
-        :param mean: (Tensor) The mean of the latent vector z following a Gaussian distribution.
-                              (N, z_dim)
-        :param std:  (Tensor) The standard deviation of the latent vector z following a Gaussian
-                              distribution. (N, z_dim)
+        :param Tensor mean:  The mean of the latent vector z following a Gaussian distribution.
+                             (N, z_dim)
+        :param Tensor std:   The standard deviation of the latent vector z following a Gaussian
+                             distribution. (N, z_dim)
 
-        :return: (Tensor) Linear combination of the mean and standard deviation, where the latter
-                          factor is multiplied with a random variable epsilon ~ N(0, 1). Basically
-                          the latent vector z. (N, z_dim)
+        :return:             A Tensor of the Linear combination of the mean and standard deviation, where the latter
+                             factor is multiplied with a random variable epsilon ~ N(0, 1). Basically
+                             the latent vector z. (N, z_dim)
 
         This method computes the latent vector z by applying the reparameterization trick to the
         output of the mean and standard deviation layers, in order to be able to later compute the
@@ -116,10 +119,11 @@ class VAE(pl.LightningModule):
 
     def _decode(self, z):
         """
-        :param z: (Tensor) Latent vector computed using the mean and variance layers (with the
+        :param Tensor z:   Latent vector computed using the mean and variance layers (with the
                            reparameterization trick). (N, z_dim)
 
-        :return: (Tensor) The output of the decoder part of the network. (N, input_shape[1], H, W)
+        :return:           A Tensor with The output of the decoder part of the network.
+                           (N, input_shape[1], H, W)
 
         This method performs forward propagation of the latent vector through the decoder of the
         VAE to get the final output of the network.
@@ -141,9 +145,10 @@ class VAE(pl.LightningModule):
 
     def forward(self, X):
         """
-        :param X: (Tensor) The input to run through the VAE. (N, input_shape[1], H, W)
+        :param Tensor X: The input to run through the VAE. (N, input_shape[1], H, W)
 
-        :return: (tuple) The output of the Network, and the mean-standard deviation layers.
+        :return:         A tuple consisting of the output of the Network,
+                         and the mean-standard deviation layers.
                          (N, input_shape[1], H, W), (N, z_dim), (N, z_dim)
 
         This method performs Forward Propagation through all the layers of the VAE and returns
@@ -164,6 +169,12 @@ class VAE(pl.LightningModule):
 
 
     def training_step(self, batch, batch_idx):
+        """
+        :param Tensor batch:  The current batch of the training set
+        :param int batch_idx: The batch index of the current batch
+
+        :return:              A dictionary of the losses computed on the current prediction
+        """
         # unpack the current batch
         X, y = batch
 
@@ -175,6 +186,9 @@ class VAE(pl.LightningModule):
         return losses
 
     def train_dataloader(self):
+        """
+        :return:    A DataLoader object of the training set
+        """
         # download the training set using torchvision
         # if the set already exists in the provided path, it is not downloaded
         train_set = self.dataset_method(root=self.dataset_path, train=True, download=True,
@@ -184,6 +198,14 @@ class VAE(pl.LightningModule):
         return self.train_loader
 
     def test_step(self, batch, batch_idx):
+        """
+        :param Tensor batch:  The current batch of the test set
+        :param int batch_idx: The batch index of the current batch
+
+        :return:              A tuple consisting of a dictionary of the losses
+                              computed on the current prediction and the MSE Loss
+                              compared to the original picture
+        """
         # unpack the current batch
         X, y = batch
 
@@ -201,6 +223,9 @@ class VAE(pl.LightningModule):
         return losses, mse_loss
 
     def test_dataloader(self):
+        """
+        :return:    A DataLoader object of the test set
+        """
         # download the test set using torchvision
         # if the set already exists in the provided path, it is not downloaded
         test_set = self.dataset_method(root=self.dataset_path, train=False, download=True,
@@ -210,6 +235,14 @@ class VAE(pl.LightningModule):
         return self.test_loader
 
     def sample(self, number_of_images):
+        """
+        :param int number_of_images: The amount of images to compare against each other
+
+        :return:                     Does not return anything
+
+        This method plots the original images of the test set against the ones that were
+        produced from the current model.
+        """
         # get one batch from the training set and unpack it
         X, y = next(iter(self.test_loader))
 
@@ -241,17 +274,16 @@ class VAE(pl.LightningModule):
     @staticmethod
     def _data_fidelity_loss(X, X_hat, eps=1e-10):
         """
-        :param X:     (Tensor) The original input data that was passed to the VAE.
+        :param Tensor X:      The original input data that was passed to the VAE.
                                (N, input_shape[1], H, W)
-        :param X_hat: (Tensor) The reconstructed data, the output of the VAE.
+        :param Tensor X_hat:  The reconstructed data, the output of the VAE.
                                (N, input_shape[1], H, W)
-        :param eps:   (Double) A small positive double used to ensure we don't get log of 0.
+        :param Double eps:    A small positive double used to ensure we don't get log of 0.
 
-        :return: (Tensor) The Data Fidelity term of the loss function, which is given by the formula
+        :return:              A tensor containing the Data Fidelity term of the loss function,
+                              which is given by the formula
 
-            E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))] =
-
-                sum(x * log(x_hat) + (1 - x) * log(1 - x_hat))
+        E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))] = sum(x * log(x_hat) + (1 - x) * log(1 - x_hat))
 
             which is basically a Cross Entropy Loss.
 
@@ -266,16 +298,15 @@ class VAE(pl.LightningModule):
     @staticmethod
     def _kl_divergence_loss(mean, std):
         """
-        :param mean:  (Tensor) The output of the mean layer, computed with the output of the
+        :param Tensor mean:   The output of the mean layer, computed with the output of the
                                encoder. (N, z_dim)
-        :param std:   (Tensor) The output of the standard deviation layer, computed with the output
+        :param Tensor std:    The output of the standard deviation layer, computed with the output
                                of the encoder. (N, z_dim)
 
-        :return: (Tensor) The KL-Divergence term of the loss function, which is given by the formula
+        :return:              A tensor consisting of the KL-Divergence term of the loss function,
+                              which is given by the formula
 
-            D_{KL}[Q_{phi}(z | x) || P_{theta}(x)] =
-
-                (1/2) * sum(std + mean^2 - 1 - log(std))
+        D_{KL}[Q_{phi}(z | x) || P_{theta}(x)] = (1/2) * sum(std + mean^2 - 1 - log(std))
 
             In the above equation we substitute std with e^{std} to improve numerical stability.
 
@@ -289,16 +320,16 @@ class VAE(pl.LightningModule):
 
     def criterion(self, X, X_hat, mean, std):
         """
-        :param X:     (Tensor) The original input data that was passed to the VAE.
+        :param Tensor X:      The original input data that was passed to the VAE.
                                (N, input_shape[1], H, W)
-        :param X_hat: (Tensor) The reconstructed data, the output of the VAE.
+        :param Tensor X_hat:  The reconstructed data, the output of the VAE.
                                (N, input_shape[1], H, W)
-        :param mean:  (Tensor) The output of the mean layer, computed with the output of the
+        :param Tensor mean:   The output of the mean layer, computed with the output of the
                                encoder. (N, z_dim)
-        :param std:   (Tensor) The output of the standard deviation layer, computed with the output
+        :param Tensor std:    The output of the standard deviation layer, computed with the output
                                of the encoder. (N, z_dim)
 
-        :return: (Dict) A dictionary containing the values of the losses computed.
+        :return:              A dictionary containing the values of the losses computed.
 
         This method computes the loss of the VAE using the formula:
 

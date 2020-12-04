@@ -9,12 +9,13 @@ from errors import InvalidArchitectureError
 
 def compute_output_shape(current_shape, kernel_size, stride, padding):
     """
-    :param current_shape: (tuple) The current shape of the data before a convolution is applied.
-    :param kernel_size:   (tuple) The kernel size of the current convolution operation.
-    :param stride:        (tuple) The stride of the current convolution operation.
-    :param padding:       (tuple) The padding of the current convolution operation.
+    :param tuple current_shape:  The current shape of the data before a convolution is applied.
+    :param tuple kernel_size:    The kernel size of the current convolution operation.
+    :param tuple stride:         The stride of the current convolution operation.
+    :param tuple padding:        The padding of the current convolution operation.
 
-    :return: (tuple) The shape after a convolution operation with the above parameters is applied.
+    :return:         The shape after a convolution operation with the above parameters is applied
+                     (as a tuple).
                      The formula used to compute the final shape is
 
         component[i] = floor((W[i] - K[i] + 2 * P[i]) / S[i]) + 1
@@ -33,9 +34,9 @@ def compute_output_shape(current_shape, kernel_size, stride, padding):
 
 def invalid_shape(current_shape):
     """
-    :param current_shape: (tuple) The current shape of the data after a convolution is applied.
+    :param tuple current_shape: The current shape of the data after a convolution is applied.
 
-    :return: (bool) True is the shape is invalid, that is, a negative or 0 components exists. Else,
+    :return:        True if the shape is invalid, that is, a negative or 0 components exists. Else,
                     it returns False.
     """
     # check all components
@@ -48,11 +49,11 @@ def invalid_shape(current_shape):
 
 def create_encoder(architecture, input_shape):
     """
-    :param architecture: (dict)  A dictionary containing the hyperparameters that define the
-                                 architecture of the model.
-    :param input_shape:  (tuple) A tuple that corresponds to the shape of the input.
+    :param dict architecture:  A dictionary containing the hyperparameters that define the
+                               architecture of the model.
+    :param tuple input_shape:  A tuple that corresponds to the shape of the input.
 
-    :return: (Sequential) A PyTorch Sequential model that represents the encoder part of a VAE.
+    :return:             A PyTorch Sequential model that represents the encoder part of a VAE.
 
     This method builds the encoder part of a VAE and returns it. It is common for all types of VAE.
     """
@@ -104,10 +105,10 @@ def create_encoder(architecture, input_shape):
 
 def create_decoder(architecture):
     """
-    :param architecture: (dict)  A dictionary containing the hyperparameters that define the
-                                 architecture of the model.
+    :param dict architecture:  A dictionary containing the hyperparameters that define the
+                               architecture of the model.
 
-    :return: (Sequential) A PyTorch Sequential model that represents the decoder part of a VAE.
+    :return:            A PyTorch Sequential model that represents the decoder part of a VAE.
 
     This method builds the decoder part of a VAE and returns it. It is common for all types of VAE.
     """
@@ -143,11 +144,11 @@ def create_decoder(architecture):
 
 def create_output_layer(architecture, input_shape):
     """
-    :param architecture: (dict)  A dictionary containing the hyperparameters that define the
-                                 architecture of the model.
-    :param input_shape:  (tuple) A tuple that corresponds to the shape of the input.
+    :param dict architecture:  A dictionary containing the hyperparameters that define the
+                               architecture of the model.
+    :param tuple input_shape:  A tuple that corresponds to the shape of the input.
 
-    :return: (Sequential) A PyTorch Sequential model that represents the output layer of a VAE.
+    :return:             A PyTorch Sequential model that represents the output layer of a VAE.
 
     This method creates the output layer of a VAE, that is, the layer where the data from the
     output of the decoder gets fed in order to be finally reconstructed.
