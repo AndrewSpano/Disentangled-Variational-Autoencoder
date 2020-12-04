@@ -53,5 +53,17 @@ The configuration file should have the following format:
     epochs = <self-explanatory>
     batch_size = <self-explanatory>
     learning_rate = <starting learning rate, stepLr is used>
+    beta = <beta parameter for B-VAE>
     ```
+    
+### Variation
+Variation indicates what kind of Variational Autoencoder you want to train. Right now, the only options are
+    ```bash
+    $ python3 main.py -c <config_file_path> -v VAE
+    ```
+    and
+    ```bash
+    $ python3 main.py -c <config_file_path> -v B-VAE
+    ```
+Keep in mind that for the second option, the beta parameter is required in the configuration file (in the section "hyperparameters")
     
