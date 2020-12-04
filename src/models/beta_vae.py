@@ -13,9 +13,9 @@ from utils import *
 
 
 class betaVAE(VAE):
-    """ Class that implements a Disentangled Variational Autoencoder """
+    """ Class that implements a Disentangled Variational Autoencoder (Beta VAE) """
 
-    def __init__(self, architecture, input_shape, z_dimension, beta):
+    def __init__(self, architecture, hyperparameters, dataset_info):
         """
         :param architecture: (dict)  A dictionary containing the hyperparameters that define the
                                      architecture of the model.
@@ -28,10 +28,10 @@ class betaVAE(VAE):
         """
 
         # invoke the constructor of the VAE class, as the architecture is the same
-        super(betaVAE, self).__init__(architecture, input_shape, z_dimension)
+        super(betaVAE, self).__init__(architecture, hyperparameters, dataset_info)
 
-        # store the value of beta in the class
-        self.beta = beta
+        # store the value of beta in the class as it exists only in this VAE variation
+        self.beta = hyperparameters["beta"]
 
 
     def criterion(self, X, X_hat, mean, std):
@@ -47,10 +47,10 @@ class betaVAE(VAE):
 
         :return: (Dict) A dictionary containing the values of the losses computed.
 
-        This method computes the loss of the VAE using the formula:
+        This method computes the loss of the betaVAE using the formula:
 
             L(x, x_hat) = - E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))]
-                          + D_{KL}[Q_{phi}(z | x) || P_{theta}(x)]
+                          + beta * D_{KL}[Q_{phi}(z | x) || P_{theta}(x)]
 
         Intuitively, the expectation term is the Data Fidelity term, and the second term is a
         regularizer that makes sure the distribution of the encoder and the decoder stay close.
