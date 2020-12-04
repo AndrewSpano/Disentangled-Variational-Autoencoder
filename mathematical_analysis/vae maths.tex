@@ -453,7 +453,7 @@ Of course, our target is to find the $\theta,\, \phi$ that minimize the loss
 $L(\theta,\, \phi,\, x)$ for all data points $x$ in the training set, $X$ that is:
 $$\theta^*,\, \phi^* \;=\; \argmin_{\phi,\, \theta} L(\theta,\, \phi,\, x)
 \text{ over all } x \in X$$
-Where in our case $\theta^*$ are the weighs of the Recognition Network (aka encoder)
+Where in our case $\theta^*$ are the weights of the Recognition Network (aka encoder)
 and $\phi^*$ are the weights of the Generator Network (aka decoder). \clearpage
 
 % --------------------           PAGE 9            ---------------------- %
@@ -535,10 +535,10 @@ derivatives $$\frac{\partial L}{\partial \theta},\;\, \frac{\partial L}{\partial
         we get
         \begin{align*}
             \frac{\partial L}{\partial \theta}
-            \;=&\; -\frac{1}{N} \;\sum_{i=1}^N \frac{\partial}{\partial \theta}
-                \log p_{\theta}(x | z^{(i)})
+            \;=&\; -\frac{1}{L} \;\sum_{l=1}^L \frac{\partial}{\partial \theta}
+                \log p_{\theta}(x | z^{(l)})
         \end{align*}
-        where $z^{(i)} \sim q_{\theta}(z | x)$
+        where $z^{(l)} \sim q_{\theta}(z | x)$
 
     \item Partial derivative w.r.t. $\phi$:
         \bigskip
@@ -576,16 +576,24 @@ Figure \ref{fig:RepTrick} is a visual representation of the reparameterization t
 Now, again using a Monte Carlo Estimator for the Expectation of the first term,
 we can compute the gradient of the loss function $L$ w.r.t. $\phi$ as follows
 \begin{align*}
-    \frac{\partial L}{\partial \theta}
-    \;=&\; -\frac{1}{N} \;\sum_{i=1}^N \frac{\partial}{\partial \theta}
-                \log p_{\theta}(x | z^{(i)}) \,+\,
-            \frac{\partial}{\partial \theta} \left[
+    \frac{\partial L}{\partial \phi}
+    \;=&\; -\E_{z \sim p(\epsilon)} \left[ \frac{\partial}{\partial \phi}
+                \log p_{\theta}(x | z^{(l)}) \right] +
+            \frac{\partial}{\partial \phi}
                 \frac{1}{2} \sum_{i=1}^k \left[ - \log {\Sigma_{\phi}}_i(x)
                 - 1
                 + {\Sigma_{\phi}}_i(x)
-                + {\mu_{\phi}}_i^2 \right]
-            \right]
+                + {\mu_{\phi}}_i^2 \right] \\[2ex]
+%
+    \;=&\; -\frac{1}{S} \;\sum_{s=1}^S \frac{\partial}{\partial \phi}
+            \log p_{\theta}(x | z^{(l)}) \,+\,
+            \frac{1}{2} \sum_{i=1}^k \left[ -
+                \frac{\partial}{\partial \phi} \log {\Sigma_{\phi}}_i(x)
+            + \frac{\partial}{\partial \phi} {\Sigma_{\phi}}_i(x)
+            + \frac{\partial}{\partial \phi} {\mu_{\phi}}_i^2 \right]
 \end{align*}
+where $z^{(l)} \;=\; m_{\phi}(x) + \epsilon \odot \sigma_{\phi}(x)$ and
+$\epsilon^{(l)} \sim N(0, 1)$.
 \clearpage
 
 % --------------------           PAGE 12            ---------------------- %

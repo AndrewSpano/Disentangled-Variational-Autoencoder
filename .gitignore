@@ -134,6 +134,12 @@ dataset
 Dataset
 Datasets
 src/lightning_logs
+mathematical_analysis/*.log
+mathematical_analysis/*.gz
+mathematical_analysis/*.fls
+mathematical_analysis/*.out
+mathematical_analysis/*.fdb_latexmk
+mathematical_analysis/*.aux
 
 # Ignore capacity VAE as it is not yet implemented
 src/models/capacity_vae.py
