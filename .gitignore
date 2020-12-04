@@ -134,3 +134,6 @@ dataset
 Dataset
 Datasets
 src/lightning_logs
+
+# Ignore capacity VAE as it is not yet implemented
+src/models/capacity_vae.py
