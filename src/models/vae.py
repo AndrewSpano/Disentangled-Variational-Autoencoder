@@ -15,8 +15,6 @@ from torch.utils.data import Dataset, DataLoader
 from model_utils import *
 from utils import *
 
-DEFAULT_LEARNING_RATE = 1e-3
-
 class VAE(pl.LightningModule):
     """ Class that implements a Variational Autoencoder """
 
@@ -34,7 +32,6 @@ class VAE(pl.LightningModule):
         super(VAE, self).__init__()
 
         # initialize class variables regarding the architecture of the model
-
         self.conv_layers = architecture["conv_layers"]
         self.conv_channels = architecture["conv_channels"]
         self.conv_kernel_sizes = architecture["conv_kernel_sizes"]
@@ -42,8 +39,11 @@ class VAE(pl.LightningModule):
         self.conv_paddings = architecture["conv_paddings"]
         self.z_dim = architecture["z_dimension"]
 
+        # unpack the "hyperparameters" dictionary
         self.batch_size = hyperparameters["batch_size"]
+        self.learning_rate = hyperparameters["learning_rate"]
 
+        # unpack the "dataset_info" dictionary
         self.dataset_method = dataset_info["ds_method"]
         self.dataset_shape = dataset_info["ds_shape"]
         self.dataset_path = dataset_info["ds_path"]
@@ -77,7 +77,7 @@ class VAE(pl.LightningModule):
         This method applies forward propagation to the self.encoder in order to get the mean and
         standard deviation of the latent vector z.
         """
-        # run the input through the encoder part of the Nerwork
+        # run the input through the encoder part of the Network
         encoded_input = self.encoder(X)
 
         # flatten so that it can be fed to the mean and standard deviation layers
@@ -160,32 +160,39 @@ class VAE(pl.LightningModule):
         return decoded_output, mean, std
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=DEFAULT_LEARNING_RATE)
+        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
 
     def training_step(self, batch, batch_idx):
+        # unpack the current batch
         X, y = batch
 
-        output, mean, std = self(X)
-        losses = self.criterion(X, output, mean, std)
+        # pass it through the model
+        X_hat, mean, std = self(X)
+        # calculate the losses
+        losses = self.criterion(X, X_hat, mean, std)
 
         return losses
 
     def train_dataloader(self):
-        train_set_path = self.dataset_path
-        train_set = self.dataset_method(root=train_set_path, train=True, download=True,
+        # download the training set using torchvision
+        # if the set already exists in the provided path, it is not downloaded
+        train_set = self.dataset_method(root=self.dataset_path, train=True, download=True,
                                         transform=torchvision.transforms.ToTensor())
-
+        # initialize a pytorch DataLoader to feed training batches into the model
         self.train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True, num_workers=multiprocessing.cpu_count()//2)
         return self.train_loader
 
     def test_step(self, batch, batch_idx):
+        # unpack the current batch
         X, y = batch
 
+        # pass it through the model
         X_hat, mean, std = self(X)
-
+        # calculate the losses
         losses = self.criterion(X, X_hat, mean, std)
 
+        # also calculate the MSE loss
         mse_loss_func = torch.nn.MSELoss()
         mse_loss = mse_loss_func(X, X_hat)
 
@@ -194,36 +201,41 @@ class VAE(pl.LightningModule):
         return losses, mse_loss
 
     def test_dataloader(self):
-        test_set_path = self.dataset_path
-        test_set = self.dataset_method(root=test_set_path, train=False, download=True,
+        # download the test set using torchvision
+        # if the set already exists in the provided path, it is not downloaded
+        test_set = self.dataset_method(root=self.dataset_path, train=False, download=True,
                                         transform=torchvision.transforms.ToTensor())
-
+        # initialize a pytorch DataLoader to feed test batches into the model
         self.test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, shuffle=True, num_workers=multiprocessing.cpu_count()//2)
         return self.test_loader
 
     def sample(self, number_of_images):
+        # get one batch from the training set and unpack it
         X, y = next(iter(self.test_loader))
 
-        output, mean, std = self(X)
+        # pass it through the model
+        X_hat, mean, std = self(X)
 
-        max_imgs = min(number_of_images, len(X))
-        for i in range(max_imgs):
+        min_imgs = min(number_of_images, len(X))
+        # for each image out of min_imgs
+        for i in range(min_imgs):
+            # if the image is rgb
             if (self.dataset_shape[0] == 3):
+                # flatten the image
                 X_np = X[i].detach().numpy().ravel()
-                X_hat_np = output[i].detach().numpy().ravel()
-
+                X_hat_np = X_hat[i].detach().numpy().ravel()
+                # reshape it into (Width, Height, 3)
                 X_np = np.reshape(X_np, (self.dataset_shape[1], self.dataset_shape[2], 3), order='F')
                 X_hat_np = np.reshape(X_hat_np, (self.dataset_shape[1], self.dataset_shape[2], 3), order='F')
-
+                # rotate it 270 degrees
                 X_np = np.rot90(X_np, 3)
                 X_hat_np = np.rot90(X_hat_np, 3)
-                # X_np = np.rot90(X_np)
-                # X_hat_np = np.rot90(X_hat_np)
-                # X_np = np.rot90(X_np)
-                # X_hat_np = np.rot90(X_hat_np)
 
+                # plot it against the original image
                 plot_against(X_np, X_hat_np, y[i].item(), 'viridis')
+            # if the image is grayscale
             elif (self.dataset_shape[0] == 1):
+                # simply plot it against the original image
                 plot_against(X[i][0].detach().numpy(), output[i][0].detach().numpy(), y[i].item(), 'gray')
 
     @staticmethod
