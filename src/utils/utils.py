@@ -17,6 +17,7 @@ def filepath_is_not_valid(filepath):
     return False
 
 def prepare_dataset(configuration):
+    """ function used to set some values used by the model based on the dataset selected """
     dataset_info = {}
     if (configuration["dataset"] == "MNIST"):
         dataset_info["ds_method"] = torchvision.datasets.MNIST
@@ -32,38 +33,8 @@ def prepare_dataset(configuration):
 
     return dataset_info
 
-def parse_dataset(filepath):
-    """ function used to parse the data of a dataset """
-
-    # open the dataset
-    with open(filepath, "rb") as dataset:
-        # read the magic number and the number of images
-        magic_number, number_of_images = struct.unpack(">II", dataset.read(8))
-        # read the number of rows and number of columns per image
-        rows, columns = struct.unpack(">II", dataset.read(8))
-        # now read the rest of the file using numpy.fromfile()
-        images = np.fromfile(dataset, dtype=np.dtype(np.uint8).newbyteorder(">"))
-        # reshape so that the final shape is (number_of_images, rows, columns)
-        images = images.reshape((number_of_images, rows, columns))
-
-    # return the images
-    return images
-
-
-def parse_labelset(filepath):
-    """ function used to parse the data of a labelset """
-
-    # open the file
-    with open(filepath, "rb") as labelset:
-        # read the magic number and the number of labels
-        magic_number, number_of_labels = struct.unpack(">II", labelset.read(8))
-        # now read the rest of the file using numpy.fromfile()
-        labels = np.fromfile(labelset, dtype=np.dtype(np.uint8).newbyteorder(">"))
-
-    # return the labels
-    return labels
-
 def str_to_int_list(string):
+    """ utility function used to convert a string to a list of integers """
     list = []
     parts = string.split(',')
 
@@ -78,6 +49,7 @@ def str_to_int_list(string):
     return list
 
 def str_to_tuple_list(string):
+    """ utility function used to convert a string to a list of tuples of integers """
     list = []
     parts = string.split(')')
 
@@ -103,14 +75,8 @@ def str_to_tuple_list(string):
 
     return list
 
-def plot_image(image):
-    """ fuction used to plot an image using matplotlib """
-
-    # plot and show the image
-    plt.imshow(image, cmap="gray")
-    plt.show()
-
 def plot_against(image1, image2, label, cmap):
+    """ function used to plot 2 images "against" each other using pyplot """
     fig=plt.figure(figsize=(6, 6))
     title = "Label {}".format(label)
     fig.suptitle(title, fontsize=12)

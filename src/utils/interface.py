@@ -79,6 +79,9 @@ def parse_config_file(filepath, variation):
     batch_size_str = config.get('hyperparameters', 'batch_size')
     batch_size = int(batch_size_str)
 
+    lr_str = config.get('hyperparameters', 'learning_rate')
+    learning_rate = float(lr_str)
+
     if variation == 'B-VAE':
         beta_str = config.get('hyperparameters', 'beta')
         beta = int(beta_str)
@@ -99,7 +102,8 @@ def parse_config_file(filepath, variation):
 
     hyperparameters = {
         "epochs": epochs,
-        "batch_size": batch_size
+        "batch_size": batch_size,
+        "learning_rate": learning_rate
     }
 
     if variation == 'B-VAE':
@@ -107,14 +111,3 @@ def parse_config_file(filepath, variation):
 
 
     return (configuration, architecture, hyperparameters)
-
-
-def load_dataset(dataset):
-    ds_prompt = "\nEnter the path you want the dataset to be stored.\nIf you already have downloaded it, enter its path\n"
-    if (dataset == "MNIST"):
-        ds_path = input(ds_prompt)
-
-        train_ds = torchvision.datasets.MNIST(root=ds_path, train=True, download=True, transform=torchvision.transforms.ToTensor())
-        test_ds = torchvision.datasets.MNIST(root=ds_path, train=False, download=True, transform=torchvision.transforms.ToTensor())
-
-        return (train_ds, test_ds)

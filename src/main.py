@@ -10,6 +10,7 @@ sys.path.append("./utils")
 from interface import *
 from utils import *
 from vae import VAE
+from beta_vae import betaVAE
 
 
 def main(args):
@@ -26,12 +27,19 @@ def main(args):
         exit()
 
     # Initialization
-    model = VAE(architecture, hyperparameters, dataset_info)
+    model = None
+    if (args.variation == "VAE"):
+        model = VAE(architecture, hyperparameters, dataset_info)
+    elif (args.variation == "B-VAE"):
+        model = betaVAE(architecture, hyperparameters, dataset_info)
+
     trainer = Trainer(max_epochs = hyperparameters["epochs"], gpus=None, fast_dev_run=True)
 
     # Training and testing
     trainer.fit(model)
     result = trainer.test(model)
+    # Model needs to be transferred to the cpu as sample is a custom method
+    model = model.cpu()
     model.sample(1)
 
 if __name__ == "__main__":
