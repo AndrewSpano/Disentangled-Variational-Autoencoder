@@ -99,32 +99,69 @@ def str_to_tuple_list(string):
 
     return list
 
-def plot_against(image1, image2, label, cmap):
+def plot_multiple(images, n, dim, cmap):
     """
-    :param np.array image1:     An image stored as a numpy array
-    :param np.array image2:     An image stored as a numpy array
-    :param int label:           The label that corresponds to the images
+    :param arr images:          An array of images stored as a numpy array
+    :param int n:               The width and height of the plot in terms of images
+    :param tuple dim:           The dimension of the images
     :param str cmap:            The colourmap to be used by pyplot
 
     :return:                    Nothing
 
-    Function used to plot 2 images "against" each other using pyplot
+    Function used to plot multiple images in one single plot
     """
-    fig=plt.figure(figsize=(6, 6))
-    title = "Label {}".format(label)
-    fig.suptitle(title, fontsize=12)
-    columns = 2
-    rows = 1
+    # unpack the image dimensions
+    z_dim, x_dim, y_dim = dim
 
-    im1 = fig.add_subplot(rows, columns, 1)
-    title1 = "Original"
-    im1.title.set_text(title1)
-    plt.imshow(image1, cmap=cmap)
+    # if image is grayscale
+    if (z_dim == 1):
+        # initialize some limits on x&y
+        x_limit = np.linspace(-2, 2, n)
+        y_limit = np.linspace(-2, 2, n)
 
-    im2 = fig.add_subplot(rows, columns, 2)
-    title2 = "Generated"
-    im2.title.set_text(title2)
-    plt.imshow(image2, cmap=cmap)
+        # initialize the final combined image
+        empty = np.empty((x_dim*n, y_dim*n))
 
+        current = 0
+        for i, zi in enumerate(x_limit):
+            for j, pi in enumerate(y_limit):
+                # each image insert it into a subsection of the final image
+                empty[(n-i-1)*x_dim:(n-i)*x_dim, j*y_dim:(j+1)*y_dim] = images[current][0]
+                current+=1
 
-    plt.show()
+        plt.figure(figsize=(8, 10))
+
+        x,y = np.meshgrid(x_limit, y_limit)
+        plt.imshow(empty, origin="upper", cmap=cmap)
+        plt.grid(False)
+        plt.show()
+
+    # if the image is rgb
+    elif (z_dim == 3):
+        # initialize some limits on x&y
+        x_limit = np.linspace(-2, 2, n)
+        y_limit = np.linspace(-2, 2, n)
+
+        # initialize the final combined image (now with one more dim)
+        empty = np.empty((x_dim*n, y_dim*n, 3))
+
+        current = 0
+        for i, zi in enumerate(x_limit):
+            for j, pi in enumerate(y_limit):
+                # flatten the image
+                curr_img = images[current].ravel()
+                # reshape it into the correct shape for pyplot
+                curr_img = np.reshape(curr_img, (x_dim, y_dim, z_dim), order='F')
+                # rotate it by 270 degrees
+                curr_img = np.rot90(curr_img, 3)
+
+                # insert it into a subsection of the final image
+                empty[(n-i-1)*x_dim:(n-i)*x_dim, j*y_dim:(j+1)*y_dim] = curr_img
+                current+=1
+
+        plt.figure(figsize=(8, 10))
+
+        x,y = np.meshgrid(x_limit, y_limit)
+        plt.imshow(empty, origin="upper", cmap=cmap)
+        plt.grid(False)
+        plt.show()
