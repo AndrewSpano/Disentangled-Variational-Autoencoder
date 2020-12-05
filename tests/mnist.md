@@ -16,6 +16,8 @@ Analytically, for all the following tests:
 
 #### VAE
 
+![image](./images/z_2.png)
+
 #### B-VAE
 
 
