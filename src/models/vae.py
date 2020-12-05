@@ -44,7 +44,7 @@ class VAE(pl.LightningModule):
         # unpack the "hyperparameters" dictionary
         self.batch_size = hyperparameters["batch_size"]
         self.learning_rate = hyperparameters["learning_rate"]
-        self.scheduler_step_size = hyperparameters["epochs"]//4
+        self.scheduler_step_size = hyperparameters["epochs"]//2
 
         # unpack the "dataset_info" dictionary
         self.dataset_method = dataset_info["ds_method"]
@@ -245,36 +245,33 @@ class VAE(pl.LightningModule):
 
         :return:                     Does not return anything
 
-        This method plots the original images of the test set against the ones that were
-        produced from the current model.
+        This method plots n generated images next to each other
         """
-        # get one batch from the training set and unpack it
-        X, y = next(iter(self.test_loader))
 
-        # pass it through the model
+        # get as many batches from the test set to fill the final plot
+        tensors = []
+        img_count = 0
+        while number_of_images*number_of_images > img_count:
+            batch, y = next(iter(self.test_loader))
+            img_count += len(batch)
+            tensors.append(batch)
+
+        # concatenate them
+        X = torch.cat(tensors, dim=0)
+
+        # pass them through the model
         X_hat, mean, std = self(X)
 
         min_imgs = min(number_of_images, len(X))
-        # for each image out of min_imgs
-        for i in range(min_imgs):
-            # if the image is rgb
-            if (self.dataset_shape[0] == 3):
-                # flatten the image
-                X_np = X[i].detach().numpy().ravel()
-                X_hat_np = X_hat[i].detach().numpy().ravel()
-                # reshape it into (Width, Height, 3)
-                X_np = np.reshape(X_np, (self.dataset_shape[1], self.dataset_shape[2], 3), order='F')
-                X_hat_np = np.reshape(X_hat_np, (self.dataset_shape[1], self.dataset_shape[2], 3), order='F')
-                # rotate it 270 degrees
-                X_np = np.rot90(X_np, 3)
-                X_hat_np = np.rot90(X_hat_np, 3)
 
-                # plot it against the original image
-                plot_against(X_np, X_hat_np, y[i].item(), 'viridis')
-            # if the image is grayscale
-            elif (self.dataset_shape[0] == 1):
-                # simply plot it against the original image
-                plot_against(X[i][0].detach().numpy(), output[i][0].detach().numpy(), y[i].item(), 'gray')
+        # set the correct colourmap that corresponds to the image dimension
+        cmap = None
+        if (self.dataset_shape[0] == 3):
+            cmap = 'viridis'
+        elif (self.dataset_shape[0] == 1):
+            cmap = 'gray'
+
+        plot_multiple(X_hat.detach().numpy(), min_imgs, self.dataset_shape, cmap)
 
     @staticmethod
     def _data_fidelity_loss(X, X_hat, eps=1e-10):

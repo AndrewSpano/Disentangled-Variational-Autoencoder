@@ -33,14 +33,15 @@ def main(args):
     elif (args.variation == "B-VAE"):
         model = betaVAE(architecture, hyperparameters, dataset_info)
 
-    trainer = Trainer(max_epochs = hyperparameters["epochs"], gpus=None, fast_dev_run=True)
+    # here you can change the gpus parameter into the amount of gpus you want the model to use
+    trainer = Trainer(max_epochs = hyperparameters["epochs"], gpus=None, fast_dev_run=False)
 
     # Training and testing
     trainer.fit(model)
     result = trainer.test(model)
     # Model needs to be transferred to the cpu as sample is a custom method
     model = model.cpu()
-    model.sample(1)
+    model.sample(3)
 
 if __name__ == "__main__":
     """ call main() function here """
