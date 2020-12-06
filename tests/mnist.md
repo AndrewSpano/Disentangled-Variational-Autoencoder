@@ -12,24 +12,22 @@ Analytically, for all the following tests:
 - Batch Size = 16
 - Learning Rate = 3e-6
 
-## Latent Vector Dimension = 2
+## VAE
 
-#### VAE
+#### Latent Vector Dimension = 2
 
-![image](./images/z_2.png)
+Sample Images:
 
-#### B-VAE
+![image](./images/mnist_z_2_s.png)
 
+#### Latent Vector Dimension = 4
 
-## Latent Vector Dimension = 8
+Sample Images:
 
-#### VAE
-
-#### B-VAE
-
+![image](./images/mnist_z_4_s.png)
 
 ## Latent Vector Dimension = 16
 
-#### VAE
+Reconstructed Images:
 
-#### B-VAE
+![image](./images/mnist_z_16_r.png)
