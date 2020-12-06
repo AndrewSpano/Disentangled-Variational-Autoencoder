@@ -251,6 +251,29 @@ class VAE(pl.LightningModule):
                                       num_workers=multiprocessing.cpu_count() // 2)
         return self.test_loader
 
+    def sample(self, n):
+        """
+        :param int n: The amount of images per row to sample
+
+        :return:  None
+
+        This method plots n^2 sampled images next to each other
+        """
+        # create a new latent vector consisting of random values
+        z = torch.randn(n*n, self.z_dim)
+
+        # pass the vector through the decoder
+        samples = self._decode(z)
+
+        # set the correct colourmap that corresponds to the image dimension
+        cmap = None
+        if (self.dataset_shape[0] == 3):
+            cmap = 'viridis'
+        elif (self.dataset_shape[0] == 1):
+            cmap = 'gray'
+
+        plot_multiple(samples.detach().numpy(), n, self.dataset_shape, cmap)
+
     def reconstruct(self, n):
         """
         :param int n:  The number of images to plot in each row of whole plot.
@@ -335,7 +358,7 @@ class VAE(pl.LightningModule):
         return kl_divergence
 
     @staticmethod
-    def criterion(self, X, X_hat, mean, std):
+    def criterion(X, X_hat, mean, std):
         """
         :param Tensor X:      The original input data that was passed to the VAE.
                                 (N, C, H, W)

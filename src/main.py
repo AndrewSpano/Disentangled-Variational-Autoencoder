@@ -41,7 +41,8 @@ def main(args):
     result = trainer.test(model)
     # Model needs to be transferred to the cpu as sample is a custom method
     model = model.cpu()
-    model.sample(3)
+    model.sample(5)
+    model.reconstruct(5)
 
 if __name__ == "__main__":
     """ call main() function here """

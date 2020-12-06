@@ -44,7 +44,7 @@ class betaVAE(VAE):
         self.beta = hyperparameters["beta"]
 
     @staticmethod
-    def criterion(self, X, X_hat, mean, std):
+    def criterion(X, X_hat, mean, std):
         """
         :param Tensor X:      The original input data that was passed to the B-VAE.
                                 (N, input_shape[1], H, W)
@@ -76,6 +76,6 @@ class betaVAE(VAE):
         # place them all inside a dictionary and return it
         losses = {"data_fidelity": torch.mean(data_fidelity_loss),
                   "kl-divergence": torch.mean(kl_divergence_loss),
-                  "beta_kl-divergence": torch.mean(self.beta * kl_divergence_loss),
+                  "beta_kl-divergence": self.beta * torch.mean(kl_divergence_loss),
                   "loss": torch.mean(loss)}
         return losses
