@@ -1,5 +1,14 @@
 """
 Implements the Original Variational Autoencoder paper: https://arxiv.org/pdf/1312.6114.pdf
+
+Notation used:
+
+    N: Batch Size
+    C: Number of Channels
+    H: Height (of picture)
+    W: Width (of picture)
+    z_dim: The dimension of the latent vector
+
 """
 import sys
 sys.path.append("../utils")
@@ -21,11 +30,9 @@ class VAE(pl.LightningModule):
     def __init__(self, architecture, hyperparameters, dataset_info):
         """
         :param dict architecture:      A dictionary containing the hyperparameters that define the
-                                       architecture of the model.
+                                         architecture of the model.
         :param dict hyperparameters:   A tuple that corresponds to the shape of the input.
         :param dict dataset_info:      The dimension of the latent vector z (bottleneck).
-
-        :return:                       An instance of the VAE class
 
         The constructor of the Variational Autoencoder.
         """
@@ -44,7 +51,7 @@ class VAE(pl.LightningModule):
         # unpack the "hyperparameters" dictionary
         self.batch_size = hyperparameters["batch_size"]
         self.learning_rate = hyperparameters["learning_rate"]
-        self.scheduler_step_size = hyperparameters["epochs"]//2
+        self.scheduler_step_size = hyperparameters["epochs"] // 2
 
         # unpack the "dataset_info" dictionary
         self.dataset_method = dataset_info["ds_method"]
@@ -52,10 +59,10 @@ class VAE(pl.LightningModule):
         self.dataset_path = dataset_info["ds_path"]
 
         # build the encoder
-        self.encoder, self.encoder_output_shape = create_encoder(architecture, self.dataset_shape)
+        self.encoder, self.encoder_shapes = create_encoder(architecture, self.dataset_shape)
 
         # compute the length of the output of the decoder once it has been flattened
-        in_features = self.conv_channels[-1] * np.prod(self.encoder_output_shape[:])
+        in_features = self.conv_channels[-1] * np.prod(self.encoder_shapes[-1][:])
         # now define the mean and standard deviation layers
         self.mean_layer = nn.Linear(in_features=in_features, out_features=self.z_dim)
         self.std_layer = nn.Linear(in_features=in_features, out_features=self.z_dim)
@@ -65,18 +72,17 @@ class VAE(pl.LightningModule):
         self.decoder_input = nn.Linear(in_features=self.z_dim, out_features=in_features)
 
         # build the decoder
-        self.decoder = create_decoder(architecture)
+        self.decoder = create_decoder(architecture, self.encoder_shapes)
 
         # build the output layer
         self.output_layer = create_output_layer(architecture, self.dataset_shape)
 
     def _encode(self, X):
         """
-        :param Tensor X:  Input to encode into mean and standard deviation.
-                          (N, input_shape[1], H, W)
+        :param Tensor X:  Input to encode into mean and standard deviation. (N, C, H, W)
 
-        :return:          A tuple with the mean and std tensors that the encoder produces
-                          for input X. (N, z_dim)
+        :return:  The mean and std tensors that the encoder produces for input X. (N, z_dim)
+        :rtype:   (Tensor, Tensor)
 
         This method applies forward propagation to the self.encoder in order to get the mean and
         standard deviation of the latent vector z.
@@ -96,13 +102,14 @@ class VAE(pl.LightningModule):
     def _compute_latent_vector(self, mean, std):
         """
         :param Tensor mean:  The mean of the latent vector z following a Gaussian distribution.
-                             (N, z_dim)
+                               (N, z_dim)
         :param Tensor std:   The standard deviation of the latent vector z following a Gaussian
-                             distribution. (N, z_dim)
+                               distribution. (N, z_dim)
 
-        :return:             A Tensor of the Linear combination of the mean and standard deviation, where the latter
-                             factor is multiplied with a random variable epsilon ~ N(0, 1). Basically
-                             the latent vector z. (N, z_dim)
+        :return:  The Linear combination of the mean and standard deviation, where the latter
+                    factor is multiplied with a random variable epsilon ~ N(0, 1). Basically
+                    the latent vector z. (N, z_dim)
+        :rtype:   Tensor
 
         This method computes the latent vector z by applying the reparameterization trick to the
         output of the mean and standard deviation layers, in order to be able to later compute the
@@ -112,19 +119,17 @@ class VAE(pl.LightningModule):
 
         # compute the stochastic node epsilon
         epsilon = torch.randn_like(std)
-        # raise the standard deviation to an exponent, to improve numberical stability
-        std = torch.exp(1/2 * std)
 
         # compute the linear combination of the above attributes and return
-        return mean + epsilon * std
+        return mean + epsilon * (1.0 / 2) * std
 
     def _decode(self, z):
         """
-        :param Tensor z:   Latent vector computed using the mean and variance layers (with the
-                           reparameterization trick). (N, z_dim)
+        :param Tensor z:  Latent vector computed using the mean and variance layers (with the
+                            reparameterization trick). (N, z_dim)
 
-        :return:           A Tensor with The output of the decoder part of the network.
-                           (N, input_shape[1], H, W)
+        :return:  The output of the decoder part of the network. (N, C, H, W)
+        :rtype:   Tensor
 
         This method performs forward propagation of the latent vector through the decoder of the
         VAE to get the final output of the network.
@@ -133,8 +138,8 @@ class VAE(pl.LightningModule):
         decoder_input = self.decoder_input(z)
 
         # convert back the shape that will be fed to the decoder
-        height = self.encoder_output_shape[0]
-        width = self.encoder_output_shape[1]
+        height = self.encoder_shapes[-1][0]
+        width = self.encoder_shapes[-1][1]
         decoder_input = decoder_input.view(-1, self.conv_channels[-1], height, width)
 
         # run through the decoder
@@ -146,11 +151,11 @@ class VAE(pl.LightningModule):
 
     def forward(self, X):
         """
-        :param Tensor X: The input to run through the VAE. (N, input_shape[1], H, W)
+        :param Tensor X:  The input to run through the VAE. (N, C, H, W)
 
-        :return:         A tuple consisting of the output of the Network,
-                         and the mean-standard deviation layers.
-                         (N, input_shape[1], H, W), (N, z_dim), (N, z_dim)
+        :return: The output of the Network, along with the mean, standard deviation layers.
+                   (N, C, H, W), (N, z_dim), (N, z_dim)
+        :rtype:  (Tensor, Tensor, Tensor)
 
         This method performs Forward Propagation through all the layers of the VAE and returns
         the reconstructed input.
@@ -166,19 +171,24 @@ class VAE(pl.LightningModule):
         return decoded_output, mean, std
 
     def configure_optimizers(self):
+        """
+        :return:  The optimizer that will be used during backpropagation, along with a scheduler.
+        :rtype:   (torch.optim.Optimizer, torch.optim.lr_scheduler)
+        """
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=self.scheduler_step_size
-                                                    , gamma=0.1)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=self.scheduler_step_size,
+                                                    gamma=0.1)
 
         return [optimizer], [scheduler]
 
 
     def training_step(self, batch, batch_idx):
         """
-        :param Tensor batch:  The current batch of the training set
-        :param int batch_idx: The batch index of the current batch
+        :param Tensor batch:   The current batch of the training set.
+        :param int batch_idx:  The batch index of the current batch.
 
-        :return:              A dictionary of the losses computed on the current prediction
+        :return:  A dictionary of the losses computed on the current prediction.
+        :rtype:   (dict)
         """
         # unpack the current batch
         X, y = batch
@@ -186,30 +196,31 @@ class VAE(pl.LightningModule):
         # pass it through the model
         X_hat, mean, std = self(X)
         # calculate the losses
-        losses = self.criterion(X, X_hat, mean, std)
+        losses = VAE.criterion(X, X_hat, mean, std)
 
         return losses
 
     def train_dataloader(self):
         """
-        :return:    A DataLoader object of the training set
+        :return:  A DataLoader object of the training set.
+        :rtype:   torch.utils.data.DataLoader
         """
-        # download the training set using torchvision
-        # if the set already exists in the provided path, it is not downloaded
+        # download the training set using torchvision if it hasn't already been downloaded
         train_set = self.dataset_method(root=self.dataset_path, train=True, download=True,
                                         transform=torchvision.transforms.ToTensor())
         # initialize a pytorch DataLoader to feed training batches into the model
-        self.train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True, num_workers=multiprocessing.cpu_count()//2)
+        self.train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True,
+                                       num_workers=multiprocessing.cpu_count()//2)
         return self.train_loader
 
     def test_step(self, batch, batch_idx):
         """
-        :param Tensor batch:  The current batch of the test set
-        :param int batch_idx: The batch index of the current batch
+        :param Tensor batch:   The current batch of the test set.
+        :param int batch_idx:  The batch index of the current batch.
 
-        :return:              A tuple consisting of a dictionary of the losses
-                              computed on the current prediction and the MSE Loss
-                              compared to the original picture
+        :return:  A tuple consisting of a dictionary of the losses computed on the current
+                    prediction and the MSE Loss compared to the original picture.
+        :rtype:  (dict, Tensor)
         """
         # unpack the current batch
         X, y = batch
@@ -217,7 +228,7 @@ class VAE(pl.LightningModule):
         # pass it through the model
         X_hat, mean, std = self(X)
         # calculate the losses
-        losses = self.criterion(X, X_hat, mean, std)
+        losses = VAE.criterion(X, X_hat, mean, std)
 
         # also calculate the MSE loss
         mse_loss_func = torch.nn.MSELoss()
@@ -229,29 +240,30 @@ class VAE(pl.LightningModule):
 
     def test_dataloader(self):
         """
-        :return:    A DataLoader object of the test set
+        :return:  A DataLoader object of the test set.
+        :rtype:   torch.utils.data.DataLoader
         """
-        # download the test set using torchvision
-        # if the set already exists in the provided path, it is not downloaded
+        # download the test set using torchvision if it is not already downloaded
         test_set = self.dataset_method(root=self.dataset_path, train=False, download=True,
-                                        transform=torchvision.transforms.ToTensor())
+                                       transform=torchvision.transforms.ToTensor())
         # initialize a pytorch DataLoader to feed test batches into the model
-        self.test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, shuffle=True, num_workers=multiprocessing.cpu_count()//2)
+        self.test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, shuffle=True,
+                                      num_workers=multiprocessing.cpu_count() // 2)
         return self.test_loader
 
-    def sample(self, number_of_images):
+    def reconstruct(self, n):
         """
-        :param int number_of_images: The amount of images to compare against each other
+        :param int n:  The number of images to plot in each row of whole plot.
 
-        :return:                     Does not return anything
+        :return:  None
 
-        This method plots n generated images next to each other
+        This method plots n^2 reconstructed (from the test set) images next to each other.
         """
 
         # get as many batches from the test set to fill the final plot
         tensors = []
         img_count = 0
-        while number_of_images*number_of_images > img_count:
+        while n * n > img_count:
             batch, y = next(iter(self.test_loader))
             img_count += len(batch)
             tensors.append(batch)
@@ -261,8 +273,7 @@ class VAE(pl.LightningModule):
 
         # pass them through the model
         X_hat, mean, std = self(X)
-
-        min_imgs = min(number_of_images, len(X))
+        min_imgs = min(n, len(X))
 
         # set the correct colourmap that corresponds to the image dimension
         cmap = None
@@ -271,21 +282,23 @@ class VAE(pl.LightningModule):
         elif (self.dataset_shape[0] == 1):
             cmap = 'gray'
 
+        # plot the images and their reconstructions
         plot_multiple(X_hat.detach().numpy(), min_imgs, self.dataset_shape, cmap)
 
     @staticmethod
     def _data_fidelity_loss(X, X_hat, eps=1e-10):
         """
         :param Tensor X:      The original input data that was passed to the VAE.
-                               (N, input_shape[1], H, W)
+                                (N, C, H, W)
         :param Tensor X_hat:  The reconstructed data, the output of the VAE.
-                               (N, input_shape[1], H, W)
+                                (N, C, H, W)
         :param Double eps:    A small positive double used to ensure we don't get log of 0.
 
-        :return:              A tensor containing the Data Fidelity term of the loss function,
-                              which is given by the formula
+        :return:  A tensor containing the Data Fidelity term of the loss function,
+                    which is given by the formula below.
+        :rtype:   Tensor
 
-        E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))] = sum(x * log(x_hat) + (1 - x) * log(1 - x_hat))
+        E_{z ~ q_{phi}(z | x)}[log(p_{theta}(x|z))] = sum(x * log(x_hat) + (1 - x) * log(1 - x_hat))
 
             which is basically a Cross Entropy Loss.
 
@@ -300,15 +313,16 @@ class VAE(pl.LightningModule):
     @staticmethod
     def _kl_divergence_loss(mean, std):
         """
-        :param Tensor mean:   The output of the mean layer, computed with the output of the
+        :param Tensor mean:  The output of the mean layer, computed with the output of the
                                encoder. (N, z_dim)
-        :param Tensor std:    The output of the standard deviation layer, computed with the output
+        :param Tensor std:   The output of the standard deviation layer, computed with the output
                                of the encoder. (N, z_dim)
 
-        :return:              A tensor consisting of the KL-Divergence term of the loss function,
-                              which is given by the formula
+        :return:  A tensor consisting of the KL-Divergence term of the loss function, which is
+                    given by the formula below.
+        :rtype:   Tensor
 
-        D_{KL}[Q_{phi}(z | x) || P_{theta}(x)] = (1/2) * sum(std + mean^2 - 1 - log(std))
+        D_{KL}[q_{phi}(z | x) || p_{theta}(x)] = (1/2) * sum(std + mean^2 - 1 - log(std))
 
             In the above equation we substitute std with e^{std} to improve numerical stability.
 
@@ -320,23 +334,25 @@ class VAE(pl.LightningModule):
         kl_divergence = (1 / 2) * torch.sum(torch.exp(std) + torch.square(mean) - 1 - std, axis=1)
         return kl_divergence
 
+    @staticmethod
     def criterion(self, X, X_hat, mean, std):
         """
         :param Tensor X:      The original input data that was passed to the VAE.
-                               (N, input_shape[1], H, W)
+                                (N, C, H, W)
         :param Tensor X_hat:  The reconstructed data, the output of the VAE.
-                               (N, input_shape[1], H, W)
+                                (N, C, H, W)
         :param Tensor mean:   The output of the mean layer, computed with the output of the
-                               encoder. (N, z_dim)
+                                encoder. (N, z_dim)
         :param Tensor std:    The output of the standard deviation layer, computed with the output
-                               of the encoder. (N, z_dim)
+                                of the encoder. (N, z_dim)
 
-        :return:              A dictionary containing the values of the losses computed.
+        :return: A dictionary containing the values of the losses computed.
+        :rtype:  dict
 
         This method computes the loss of the VAE using the formula:
 
-            L(x, x_hat) = - E_{z ~ Q_{phi}(z | x)}[log(P_{theta}(x|z))]
-                          + D_{KL}[Q_{phi}(z | x) || P_{theta}(x)]
+            L(x, x_hat) = - E_{z ~ q_{phi}(z | x)}[log(p_{theta}(x|z))]
+                          + D_{KL}[q_{phi}(z | x) || p_{theta}(x)]
 
         Intuitively, the expectation term is the Data Fidelity term, and the second term is a
         regularizer that makes sure the distribution of the encoder and the decoder stay close.
@@ -345,12 +361,11 @@ class VAE(pl.LightningModule):
         data_fidelity_loss = VAE._data_fidelity_loss(X, X_hat)
         kl_divergence_loss = VAE._kl_divergence_loss(mean, std)
 
-        # add them, and then compute the mean over all training examples
+        # add them to compute the loss for each training example in the mini batch
         loss = -data_fidelity_loss + kl_divergence_loss
-        loss = torch.mean(loss)
 
         # place them all inside a dictionary and return it
         losses = {"data_fidelity": torch.mean(data_fidelity_loss),
                   "kl-divergence": torch.mean(kl_divergence_loss),
-                  "loss": loss}
+                  "loss": torch.mean(loss)}
         return losses

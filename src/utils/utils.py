@@ -7,11 +7,12 @@ import torchvision
 
 def filepath_is_not_valid(filepath):
     """
-    :param str filepath:    The path of the given file to check
+    :param str filepath:   The path of the given file to check
 
-    :return:                Boolean
+    :return:  True if the the path passed as an arguments is invalid; Else False.
+    :rtype:   bool
 
-    Function used to check whether a filepath containing information is valid
+    Function used to check whether a filepath containing information is valid.
     """
 
     # check if the path leads to a file
@@ -22,11 +23,13 @@ def filepath_is_not_valid(filepath):
     # return false since the path is valid
     return False
 
+
 def prepare_dataset(configuration):
     """
-    :param dict configuration: The configuration dictionary returned by parse_config_file
+    :param dict configuration:  The configuration dictionary returned by parse_config_file.
 
-    :return:        A dictionary containing information about the dataset used
+    :return:  A dictionary containing information about the dataset used.
+    :rtype:   dict
 
     Function used to set some values used by the model based on the dataset selected
     """
@@ -45,11 +48,13 @@ def prepare_dataset(configuration):
 
     return dataset_info
 
+
 def str_to_int_list(string):
     """
-    :param str string:      A string read by the config file
+    :param str string:  A string read by the config file.
 
-    :return:        A list of integers
+    :return:  A list of integers.
+    :rtype:   list
 
     Utility function used to convert a string to a list of integers
     """
@@ -66,13 +71,16 @@ def str_to_int_list(string):
 
     return list
 
+
+
 def str_to_tuple_list(string):
     """
-    :param str string:      A string read by the config file
+    :param str string:  A string read by the config file.
 
-    :return:        A list of tuples of integers
+    :return:  A list of tuples of integers.
+    :rtype:   list
 
-    Utility function used to convert a string to a list of tuples of integers
+    Utility function used to convert a string to a list of tuples of integers.
     """
     list = []
     parts = string.split(')')
@@ -99,16 +107,17 @@ def str_to_tuple_list(string):
 
     return list
 
+
 def plot_multiple(images, n, dim, cmap):
     """
-    :param arr images:          An array of images stored as a numpy array
-    :param int n:               The width and height of the plot in terms of images
-    :param tuple dim:           The dimension of the images
-    :param str cmap:            The colourmap to be used by pyplot
+    :param arr images:  An array of images stored as a numpy array.
+    :param int n:       The width and height of the plot in terms of images.
+    :param tuple dim:   The dimension of the images.
+    :param str cmap:    The colourmap to be used by pyplot.
 
-    :return:                    Nothing
+    :return: None
 
-    Function used to plot multiple images in one single plot
+    Function used to plot multiple images in one single plot.
     """
     # unpack the image dimensions
     z_dim, x_dim, y_dim = dim

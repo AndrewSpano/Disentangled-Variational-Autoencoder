@@ -12,7 +12,7 @@ PyTorch Implementation of the papers
 <br> </br>
 
 
-## Structure of Repo
+## Structure of Repository
 - The directory [src/models](src/models) contains the models we have created so far. More are coming along the way.
 - The python script [src/main.py](src/main.py) is used for training and testing.
 - In the [mathematical_analysis](mathematical_analysis) directory there is a [pdf](mathematical_analysis/vae_maths.pdf) where the basic mathematical concepts of the Variational Autoencoder are explained thoroughly.
@@ -112,8 +112,9 @@ Keep in mind that the core code remains the same, however the initialization of 
     - [Ahlad Kumar](https://www.youtube.com/watch?v=w8F7_rQZxXk&list=PLdxQ7SoCLQANizknbIiHzL_hYjEaI-wUe)
     - [Ali Ghodsi](https://www.youtube.com/watch?v=uaaqyVS9-rM&t=2552s)
     - [Stanford](https://www.youtube.com/watch?v=5WoItGTWV54)
-- Slides/Presentations
+- Slides/Presentations:
     - [Stanford](http://cs231n.stanford.edu/slides/2017/cs231n_2017_lecture13.pdf)
     - [Harvard University](https://harvard-iacs.github.io/2019-CS109B/pages/lecture19/presentation/cs109b_lecture19_VAE.pdf)
     - [University of Columbia](https://www.cs.ubc.ca/~lsigal/532S_2018W2/Lecture17.pdf)
-    
+- Theses:
+    - [Chris Kormaris, Michalis Titsias](https://www.researchgate.net/publication/337000568_Postgraduate_Thesis_-_Variational_Autoencoders)
