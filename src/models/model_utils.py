@@ -158,10 +158,10 @@ def create_decoder(architecture, encoder_shapes):
     :param dict architecture:    A dictionary containing the hyperparameters that define the
                                    architecture of the model.
     :param list encoder_shapes:  A list that contains the shape of the data after it is applied to
-                                    every set of convolutional layers.
+                                   every set of convolutional layers.
 
     :return:  A PyTorch Sequential model that represents the decoder part of a VAE.
-    :rtype:   (torch.nn.Sequential)
+    :rtype:   torch.nn.Sequential
 
     This method builds the decoder part of a VAE and returns it. It is common for all types of VAE.
     """

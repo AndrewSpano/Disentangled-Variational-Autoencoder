@@ -14,9 +14,11 @@ PyTorch Implementation of the papers
 
 ## Structure of Repository
 - The directory [src/models](src/models) contains the models we have created so far. More are coming along the way.
-- The python script [src/main.py](src/main.py) is used for training and testing.
+- The python script [src/main.py](src/main.py) is the main executableg.
+- The [notebook](notebook) directory contains a colab notebook that can be used for training and testing.
 - In the [mathematical_analysis](mathematical_analysis) directory there is a [pdf](mathematical_analysis/vae_maths.pdf) where the basic mathematical concepts of the Variational Autoencoder are explained thoroughly.
 - In the [config](config) directory there are some configuration files that can be used to create the models.
+- In the [tests](tests) directory there are the results we got from running the model with various configurations.
 <br> </br>
 
 
@@ -35,24 +37,29 @@ Currently two models are supported, a simple Variational Autoencoder and a Disen
 
 - [beta Variational Autoencoder](src/models/beta_vae.py)
     
-    Another form of a Variational Autoencoder is the beta-VAE. The difference between the Vanilla VAE and the beta-VAE is in the loss function of the latter: The KL-Divergence term is multiplied with a hyperprameter beta. This introduces a disentanglement to the idea of the VAE, as in many cases it allows a smoother and more "continious" transition of the output data, for small changes in the latent vector z. More information on this topic can be found in the sources section below.
+    Another form of a Variational Autoencoder is the beta-VAE. The difference between the Vanilla VAE and the beta-VAE is in the loss function of the latter: The KL-Divergence term is multiplied with a hyperprameter beta. This introduces a disentanglement to the idea of the VAE, as in many cases it allows a smoother and more "continuous" transition of the output data, for small changes in the latent vector z. More information on this topic can be found in the sources section below.
 
 Note that for a more in-depth explanation of how and why the VAE framework actually makes sense, some custom latex notes have been made in a pdf
 [here](mathematical_analysis/vae_maths.pdf).
 <br> </br>
 
 
-## Results of both models here
+## Samples (Generated) images for both Datasets
 
-![image](./tests/images/mnist_z_2_s_B_150.png)
+![image](./tests/images/mnist_z_2_s.png)
+![image](./tests/images/fmnist_z_2_s_B_3.png)
 
 
 ## Mathematics of VAE
-As stated above, I have written in Latex some [notes](mathematical_analysis/vae_maths.pdf) about the mathematics behind the Variational Autoencoder. Initially, I started making these notes for myself. Later I realized that they could assist others in understanding the basic concepts of the VAE. Hence, I made them public in the repo. Special thanks to [Ahlad Kumar](https://www.youtube.com/user/kumarahlad) for explaining complex mathematical topics that were not taught in our Bachelor. Also a big thanks to all the resources I have listed in the end of the repo.
+As stated above, I have written in Latex some [notes](mathematical_analysis/vae_maths.pdf) about the mathematics behind the Variational Autoencoder. Initially, I started making these notes for myself. Later I realized that they could assist others in understanding the basic concepts of the VAE. Hence, I made them public in the repo. Special thanks to [Ahlad Kumar](https://www.youtube.com/user/kumarahlad) for explaining complex mathematical topics that were not taught in our Bachelor. Also a big thanks to all the resources that have been listed in the end of the repo.
 <br> </br>
 
-      
+
 ## Execution
+First install the appropriate libraries with the command
+```bash
+$ pip install -r requirements.txt
+```
 To execute the VAE, you have to navigate to the [src](src) directory and execute the following command
 ```bash
 $ python3 main.py -c <config_file_path> -v <variation>

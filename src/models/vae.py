@@ -210,7 +210,7 @@ class VAE(pl.LightningModule):
                                         transform=torchvision.transforms.ToTensor())
         # initialize a pytorch DataLoader to feed training batches into the model
         self.train_loader = DataLoader(dataset=train_set, batch_size=self.batch_size, shuffle=True,
-                                       num_workers=multiprocessing.cpu_count()//2)
+                                       num_workers=multiprocessing.cpu_count() // 2)
         return self.train_loader
 
     def test_step(self, batch, batch_idx):
