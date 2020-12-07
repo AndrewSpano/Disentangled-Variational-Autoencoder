@@ -43,7 +43,8 @@ Note that for a more in-depth explanation of how and why the VAE framework actua
 
 
 ## Results of both models here
-## ToDo: Dimitris
+
+![image](./tests/images/mnist_readme.png)
 
 
 ## Mathematics of VAE
@@ -61,7 +62,7 @@ The configuration file should have the following format:
 
 ```
 [configuration]
-dataset = <MNIST or CIFAR10>
+dataset = <MNIST, FashionMNIST or CIFAR10>
 path = <path_to_dataset>
 [architecture]
 conv_layers = <amount of convolutional layers>
