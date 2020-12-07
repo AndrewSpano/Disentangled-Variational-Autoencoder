@@ -39,7 +39,7 @@ def main(args):
     # Training and testing
     trainer.fit(model)
     result = trainer.test(model)
-    # Model needs to be transferred to the cpu as sample is a custom method
+    # Model needs to be transferred to the cpu as sample and reconstruct are custom methods
     model = model.cpu()
     model.sample(5)
     model.reconstruct(5)

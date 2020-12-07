@@ -14,8 +14,7 @@ def parse_cmd_args(arg=None):
     """
 
     # create the argument parser
-    description = "Python script that creates a variational autoencoder used to reduce the dimensionality " \
-                  "of the MNIST dataset."
+    description = "Python script that creates a variational autoencoder"
     parser = ArgumentParser(description=description)
 
     # add an argument for the path of the dataset

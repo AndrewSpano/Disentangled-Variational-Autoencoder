@@ -42,6 +42,10 @@ def prepare_dataset(configuration):
         dataset_info["ds_method"] = torchvision.datasets.CIFAR10
         dataset_info["ds_shape"] = (3, 32, 32)
         dataset_info["ds_path"] = configuration["path"]
+    elif (configuration["dataset"] == "FashionMNIST"):
+        dataset_info["ds_method"] = torchvision.datasets.FashionMNIST
+        dataset_info["ds_shape"] = (1, 28, 28)
+        dataset_info["ds_path"] = configuration["path"]
     else:
         print("Currently only MNIST & CIFAR10 datasets are supported")
         return None
