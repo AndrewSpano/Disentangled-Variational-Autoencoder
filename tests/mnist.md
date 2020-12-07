@@ -30,7 +30,6 @@ Sample Images:
 
 Sample Images:
 
-
 ![image](./images/mnist_z_16_s.png)
 
 Reconstructed Images:
@@ -42,6 +41,14 @@ Reconstructed Images:
 The following tests will be executed with the same configuration as above, and also the latent vector dimension is constant at 2. Hence the only thing that is tweaked is "beta"
 
 #### Beta = 4
+
+Sample Images:
+
+![image](./images/mnist_z_2_s_B_4.png)
+
+Reconstructed Images:
+
+![image](./images/mnist_z_2_r_B_4.png)
 
 #### Beta = 80
 
