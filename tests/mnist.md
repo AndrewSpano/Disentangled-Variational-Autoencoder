@@ -26,8 +26,23 @@ Sample Images:
 
 ![image](./images/mnist_z_4_s.png)
 
-## Latent Vector Dimension = 16
+#### Latent Vector Dimension = 16
+
+Sample Images:
+
+
+![image](./images/mnist_z_16_s.png)
 
 Reconstructed Images:
 
 ![image](./images/mnist_z_16_r.png)
+
+
+## B-VAE
+The following tests will be executed with the same configuration as above, and also the latent vector dimension is constant at 2. Hence the only thing that is tweaked is "beta"
+
+#### Beta = 4
+
+#### Beta = 80
+
+#### Beta = 150
