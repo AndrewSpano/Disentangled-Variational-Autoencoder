@@ -52,4 +52,20 @@ Reconstructed Images:
 
 #### Beta = 80
 
+Sample Images:
+
+![image](./images/mnist_z_2_s_B_80.png)
+
+Reconstructed Images:
+
+![image](./images/mnist_z_2_r_B_80.png)
+
 #### Beta = 150
+
+Sample Images:
+
+![image](./images/mnist_z_2_s_B_150.png)
+
+Reconstructed Images:
+
+![image](./images/mnist_z_2_r_B_150.png)
