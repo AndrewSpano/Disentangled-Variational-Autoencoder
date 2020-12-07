@@ -44,7 +44,7 @@ Note that for a more in-depth explanation of how and why the VAE framework actua
 
 ## Results of both models here
 
-![image](./tests/images/mnist_readme.png)
+![image](./tests/images/mnist_z_2_s_B_150.png)
 
 
 ## Mathematics of VAE
