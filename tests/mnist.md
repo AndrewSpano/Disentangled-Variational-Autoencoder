@@ -32,6 +32,8 @@ Sample Images:
 
 ![image](./images/mnist_z_16_s.png)
 
+If you look closely, these digits resemble the handwriting of doctors.
+
 Reconstructed Images:
 
 ![image](./images/mnist_z_16_r.png)

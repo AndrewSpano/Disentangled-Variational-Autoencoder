@@ -31,8 +31,8 @@ class betaVAE(VAE):
         """
         :param dict architecture:     A dictionary containing the hyperparameters that define the
                                         architecture of the model.
-        :param dict hyperparameters:  A tuple that corresponds to the shape of the input.
-        :param dict dataset_info:     The dimension of the latent vector z (bottleneck).
+        :param dict hyperparameters:   A dictionary containing the hyperparameters of the model.
+        :param dict dataset_info:      A dictionary containing information about the input dataset.
 
         The constructor of the Disentangled Variational Autoencoder.
         """
